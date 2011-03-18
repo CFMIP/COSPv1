@@ -1,0 +1,215 @@
+.SUFFIXES : .F .f .c .o .a .f90 .f95
+########################################################################
+#              Adapt these variables to your environment
+########################################################################
+# F90      = pgf90
+# F90FLAGS = -O0 -Mpreprocess
+# NCDF_INC = /opt/ukmo/utils/contrib/linux_only/include/pgf90
+# NCDF_LIB = /opt/ukmo/utils/contrib/linux_only/lib/pgf90
+#F90FLAGS = -C -Mchkfpstk -Mchkptr -Mchkstk
+
+
+F90      = ifort
+# F90FLAGS = -C -check -fpp
+F90FLAGS = -O0
+# NCDF_INC = /project/ipcc/ar5/sw/oss/include
+# NCDF_LIB = /project/ipcc/ar5/sw/oss/lib
+NCDF_INC = /data/cr2/hadac/software/netcdf-3.6.3.ifort/include
+NCDF_LIB = /data/cr2/hadac/software/netcdf-3.6.3.ifort/lib
+# F90FLAGS = -check all
+
+# F90      = f95
+# F90FLAGS = -O0 -dcfuns -mismatch -maxcontin=100 -C=all
+# NCDF_INC = /opt/ukmo/utils/contrib/linux_only/include/f95
+# NCDF_LIB = /opt/ukmo/utils/contrib/linux_only/lib/f95
+
+
+# ---------------   CMOR  ------------------
+# V1
+CMOR_INC = /data/cr2/hadac/software/CMOR_V1.3/${F90}/include
+CMOR_LIB = /data/cr2/hadac/software/CMOR_V1.3/${F90}/lib
+
+# --------------------------------------------
+
+
+INC = /opt/ukmo/utils/contrib/linux_only/include
+LIB = /opt/ukmo/utils/contrib/linux_only/lib
+
+HDF5_INC = /project/ipcc/ar5/sw/oss/include
+HDF5_LIB = /data/cr2/hadac/software/hdf5-1.8.3/ifort/lib
+
+UDUNITS_LIB = /opt/ukmo/utils/supported/linux_only/lib
+UUID_INC = /project/ipcc/ar5/sw/oss/include
+UUID_LIB = /project/ipcc/ar5/sw/oss/lib
+
+# LD_LIBRARY_PATH=/home/h03/hadju/uuid/lib:/opt/ukmo/utils/supported/linux_only/lib:/opt/ukmo/utils/contrib/linux_only/lib
+# CDMS_LIB = /usr/local/cdat/lib
+
+# Non-optional simulators. You should not need to change this
+RS_PATH = quickbeam
+CS_PATH = actsim
+LLNL_PATH = llnl
+ISCCP_PATH = icarus-scops-4.0-bsd
+MISR_PATH = MISR_simulator
+MODIS_PATH = MODIS_simulator
+# RTTOV variables. You may need to change this
+RTTOV_PATH     = /data/cr2/hadac/software/rttov
+RTTOV_LIB_PATH = $(RTTOV_PATH)/rttov92.$(F90)/lib 
+RTTOV_INC_PATH = $(RTTOV_PATH)/rttov92.$(F90)/include 
+RTTOV_MOD_PATH = $(RTTOV_PATH)/rttov92.$(F90)/mod 
+########################################################################
+#              End of modifications
+########################################################################
+
+PROG =  cosp_test
+OBJS =  cosp_radar.o cosp_types.o cosp_constants.o cosp_simulator.o \
+        cosp_utils.o scops.o prec_scops.o cosp.o cosp_stats.o \
+        pf_to_mr.o \
+        cosp_lidar.o radar_simulator_types.o zeff.o \
+        array_lib.o atmos_lib.o dsd.o format_input.o \
+        gases.o load_hydrometeor_classes.o \
+        math_lib.o mrgrnk.o optics_lib.o radar_simulator.o \
+        lidar_simulator.o cosp_io.o llnl_stats.o lmd_ipsl_stats.o \
+        cosp_isccp_simulator.o icarus.o \
+        cosp_misr_simulator.o MISR_simulator.o \
+        cosp_modis_simulator.o modis_simulator.o \
+        cosp_rttov_simulator.o
+
+all: $(PROG)
+
+
+$(PROG): $(OBJS)
+	$(F90) $(F90FLAGS) $(PROG).F90 $(OBJS) \
+	-I$(NCDF_INC) -L${NCDF_LIB} -lnetcdff \
+	-I$(INC) -L${LIB} -lsz \
+	-I$(CMOR_INC) -L${CMOR_LIB} -lcmor \
+	-I$(HDF5_INC) -L${HDF5_LIB} -lhdf5_hl -lhdf5 -lm -lz \
+	-I$(UUID_INC) -L${UUID_LIB} -luuid \
+	-L${UDUNITS_LIB} -ludunits2 -o $(PROG)
+
+
+cmor1: $(OBJS)
+	$(F90) $(F90FLAGS) $(PROG).F90 $(OBJS) -I$(CMOR_INC) -L${CMOR_LIB} -lcmor \
+	-I$(NCDF_INC) -L${NCDF_LIB} -lnetcdf -o $(PROG)
+ 
+rttov: $(OBJS) rttov_multprof.o
+	$(F90) $(F90FLAGS) $(PROG).F90 $(OBJS) rttov_multprof.o \
+	-I$(NCDF_INC) -L${NCDF_LIB} -lnetcdff \
+	-I$(INC) -L${LIB} -lsz \
+	-I$(CMOR_INC) -L${CMOR_LIB} -lcmor \
+	-I$(HDF5_INC) -L${HDF5_LIB} -lhdf5_hl -lhdf5 -lm -lz \
+	-I$(UUID_INC) -L${UUID_LIB} -luuid \
+	-L${UDUNITS_LIB} -ludunits2 \
+	-L${RTTOV_LIB_PATH} -lrttov9.1 \
+	-o $(PROG)
+        
+%.o: %.f90
+	@echo $(F90) $(F90FLAGS) -c -I$(NCDF_INC) -I$(CMOR_INC) $<
+	$(F90) $(F90FLAGS) -c -I$(NCDF_INC) -I$(CMOR_INC) $<
+	@echo "-----------------------------"
+
+%.o: %.F90
+	@echo $(F90) $(F90FLAGS) -c -I$(NCDF_INC) -I$(CMOR_INC) $<
+	$(F90) $(F90FLAGS) -c -I$(NCDF_INC) -I$(CMOR_INC) $<
+	@echo "-----------------------------"
+
+$(PROG).o     : cosp_constants.o cosp_types.o cosp.o cosp_io.o
+cosp_io.o       : cosp_constants.o cosp_types.o cosp_modis_simulator.o
+cosp.o          : cosp_simulator.o cosp_types.o cosp_modis_simulator.o
+cosp_lidar.o    : cosp_constants.o cosp_types.o
+cosp_radar.o    : cosp_constants.o cosp_types.o radar_simulator_types.o \
+	              array_lib.o atmos_lib.o format_input.o math_lib.o optics_lib.o
+cosp_simulator.o: cosp_types.o cosp_radar.o cosp_lidar.o \
+                  cosp_isccp_simulator.o cosp_misr_simulator.o \
+                  cosp_modis_simulator.o cosp_rttov_simulator.o cosp_stats.o
+cosp_stats.o    : cosp_constants.o cosp_types.o llnl_stats.o lmd_ipsl_stats.o
+cosp_types.o    : cosp_constants.o cosp_utils.o radar_simulator_types.o
+cosp_utils.o    : cosp_constants.o
+lmd_ipsl_stats.o : llnl_stats.o
+array_lib.o    : mrgrnk.o
+dsd.o          : array_lib.o math_lib.o
+format_input.o : array_lib.o
+load_hydrometeor_classes.o: radar_simulator_types.o
+math_lib.o                : array_lib.o mrgrnk.o
+radar_simulator.o         : array_lib.o math_lib.o mrgrnk.o optics_lib.o \
+	                        radar_simulator_types.o
+zeff.o                    : math_lib.o optics_lib.o
+cosp_isccp_simulator.o    : cosp_constants.o cosp_types.o
+cosp_misr_simulator.o     : cosp_constants.o cosp_types.o
+cosp_modis_simulator.o    : cosp_constants.o cosp_types.o modis_simulator.o
+cosp_rttov_simulator.o    : cosp_constants.o cosp_types.o 
+
+clean_objs:
+	rm -f $(OBJS) *.mod *.o
+
+clean:
+	rm -f $(PROG) $(OBJS) *.mod *.o fort.*
+
+scops.o : $(ISCCP_PATH)/scops.f
+	$(F90) $(F90FLAGS) -c -I$(ISCCP_PATH) $<
+
+icarus.o : $(ISCCP_PATH)/icarus.f
+	$(F90) $(F90FLAGS) -c $<
+
+prec_scops.o : $(LLNL_PATH)/prec_scops.f
+	$(F90) $(F90FLAGS) -c $<
+
+pf_to_mr.o : $(LLNL_PATH)/pf_to_mr.f
+	$(F90) $(F90FLAGS) -c $<
+
+radar_simulator_types.o : $(RS_PATH)/radar_simulator_types.f90
+	$(F90) $(F90FLAGS) -c $<
+
+atmos_lib.o : $(RS_PATH)/atmos_lib.f90
+	$(F90) $(F90FLAGS) -c $<
+
+zeff.o : $(RS_PATH)/zeff.f90
+	$(F90) $(F90FLAGS) -c $<
+
+array_lib.o : $(RS_PATH)/array_lib.f90
+	$(F90) $(F90FLAGS) -c $<
+
+dsd.o : $(RS_PATH)/dsd.f90
+	$(F90) $(F90FLAGS) -c $<
+
+format_input.o : $(RS_PATH)/format_input.f90
+	$(F90) $(F90FLAGS) -c $<
+
+gases.o : $(RS_PATH)/gases.f90
+	$(F90) $(F90FLAGS) -c $<
+
+load_hydrometeor_classes.o : $(RS_PATH)/load_hydrometeor_classes.f90
+	$(F90) $(F90FLAGS) -c $<
+
+math_lib.o : $(RS_PATH)/math_lib.f90
+	$(F90) $(F90FLAGS) -c $<
+
+mrgrnk.o : $(RS_PATH)/mrgrnk.f90
+	$(F90) $(F90FLAGS) -c $<
+
+optics_lib.o : $(RS_PATH)/optics_lib.f90
+	$(F90) $(F90FLAGS) -c $<
+
+radar_simulator.o : $(RS_PATH)/radar_simulator.f90
+	$(F90) $(F90FLAGS) -c $<
+
+lidar_simulator.o : $(CS_PATH)/lidar_simulator.f90
+	$(F90) $(F90FLAGS) -c $<
+
+lmd_ipsl_stats.o : $(CS_PATH)/lmd_ipsl_stats.f90
+	$(F90) $(F90FLAGS) -c $<
+
+llnl_stats.o : $(LLNL_PATH)/llnl_stats.f90
+	$(F90) $(F90FLAGS) -c $<
+
+cosp_radar.o : $(LLNL_PATH)/cosp_radar.f90
+	$(F90) $(F90FLAGS) -c $<
+
+MISR_simulator.o : $(MISR_PATH)/MISR_simulator.f
+	$(F90) $(F90FLAGS) -c $<
+
+modis_simulator.o : $(MODIS_PATH)/modis_simulator.f90 
+	$(F90) $(F90FLAGS) -c $<
+
+rttov_multprof.o : $(RTTOV_PATH)/rttov_multprof.F90 
+	$(F90) $(F90FLAGS) -c -I $(RTTOV_INC_PATH) -I $(RTTOV_MOD_PATH) $<
