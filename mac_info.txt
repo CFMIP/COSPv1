@@ -1,0 +1,1731 @@
+# Basic system info
+-------------------------------------------------------------
+
+Hardware Overview:
+
+  Model Name:	Mac Pro
+  Model Identifier:	MacPro4,1
+  Processor Name:	Quad-Core Intel Xeon
+  Processor Speed:	2.26 GHz
+  Number Of Processors:	2
+  Total Number Of Cores:	8
+  Memory:	16 GB
+
+
+System Software Overview:
+
+  System Version:	Mac OS X 10.6.4 (10F569)
+  Kernel Version:	Darwin 10.4.0
+  64-bit Kernel and Extensions:	No
+
+Xcode:
+  Version:	3.2.3
+  Kind:	Universal
+  64-Bit (Intel):	Yes
+
+
+
+$ ifort -v
+> Version 11.1 
+
+$ icc -v 
+> Version 11.1 
+
+$ gcc -v
+> Using built-in specs.
+> Target: i686-apple-darwin10
+> Configured with: /var/tmp/gcc/gcc-5664~38/src/configure --disable-checking --enable-werror --prefix=/usr --mandir=/share/man --enable-languages=c,objc,c++,obj-c++ --program-transform-name=/^[cg][^.-]*$/s/$/-4.2/ --with-> slibdir=/usr/lib --build=i686-apple-darwin10 --program-prefix=i686-apple-darwin10- --host=x86_64-apple-darwin10 --target=i686-apple-darwin10 --with-gxx-include-dir=/include/c++/4.2.1
+> Thread model: posix
+> gcc version 4.2.1 (Apple Inc. build 5664)
+
+
+
+
+# Turn on super user
+-------------------------------------------------------------
+
+Some make commands fail when issued as "sudo make XXX" so enable su
+
+Here's how to enable root in Snow Leopard:
+
+1) Open Directory Utility in its new home, which is /System/Library/CoreServices.
+
+2) Unlock the application by clicking the padlock icon and entering your Administrator login.
+
+3) Select Edit È Enable Root User.
+
+4) Choose Edit È Change Root Password, and choose a password for the root user.
+
+$ su
+
+# Environmental Setup
+-------------------------------------------------------------
+
+I use macports and have versions of netcdf, HDF etc installed that are incompatible with COSP.
+Thus I need a secondary install and a setup where they don't see each other.
+
+Edit ~/.profile and temporarily alter path and other environmental items so the system doesn't look to /opt 1st but /usr/local
+
+$ echo $PATH
+> /usr/local:/opt/local/bin:É.
+
+Set environmental variables (this can be in .bashrc) but be sure
+$ source /opt/intel/Compiler/11.1/089/bin/ifortvars.sh intel64
+$ source /opt/intel/Compiler/11.1/089/bin/iccvars.sh intel64
+
+$ set
+edited relevant output
+CC=gcc
+CFLAGS='-arch x86_64  -fPIC'
+CPATH=/opt/intel/Compiler/11.1/089/Frameworks/ipp/Headers:/opt/intel/Compiler/11.1/089/Frameworks/mkl/include:/opt/intel/Compiler/11.1/089/Frameworks/tbb/include:/opt/intel/Compiler/11.1/089/Frameworks/ipp/Headers:/opt/intel/Compiler/11.1/089/Frameworks/mkl/include:/opt/intel/Compiler/11.1/089/Frameworks/tbb/include
+CXX=g++
+CXXFLAGS='-arch x86_64'
+DYLD_LIBRARY_PATH=/usr/local/lib:/usr/local/hdf5/:/usr/local/netcdf4:/usr/local/szip/lib:/opt/intel/Compiler/11.1/089/lib:/opt/intel/Compiler/11.1/089/lib/intel64:/opt/intel/Compiler/11.1/089/Frameworks/ipp/Libraries:/opt/intel/Compiler/11.1/089/Frameworks/mkl/lib/em64t:/opt/intel/Compiler/11.1/089/Frameworks/tbb/ia32/cc4.0.1_os10.5.4/lib:/opt/intel/Compiler/11.1/089/lib:/opt/intel/Compiler/11.1/089/lib/intel64:/opt/intel/Compiler/11.1/089/Frameworks/ipp/Libraries:/opt/intel/Compiler/11.1/089/Frameworks/mkl/lib/em64t:/opt/intel/Compiler/11.1/089/Frameworks/tbb/ia32/cc4.0.1_os10.5.4/lib
+F77=ifort
+F90=ifort
+F9X=ifort
+FC=ifort
+FFLAGS='-arch x86_64 -m64  -fPIC'
+FPATH=/opt/intel/Compiler/11.1/089/Frameworks/mkl/include:/opt/intel/Compiler/11.1/089/Frameworks/mkl/include
+INCLUDE=/opt/intel/Compiler/11.1/089/Frameworks/ipp/Headers:/opt/intel/Compiler/11.1/089/Frameworks/mkl/Headers:/opt/intel/Compiler/11.1/089/Frameworks/ipp/Headers:/opt/intel/Compiler/11.1/089/Frameworks/mkl/Headers
+INTEL_LICENSE_FILE='/opt/intel/Compiler/11.1/089/licenses:/opt/intel/licenses:/Users/mbauer/intel/licenses:/Users/Shared/Library/Application Support/Intel/Licenses:/opt/intel/Compiler/11.1/089/licenses:/opt/intel/licenses:/Users/mbauer/intel/licenses:/Users/Shared/Library/Application Support/Intel/Licenses'
+LDFLAGS='-arch x86_64'
+LD_LIBRARY_PATH=/opt/intel/Compiler/11.1/089/Frameworks/tbb/ia32/cc4.0.1_os10.5.4/lib:/opt/intel/Compiler/11.1/089/Frameworks/tbb/ia32/cc4.0.1_os10.5.4/lib
+LIB=/opt/intel/Compiler/11.1/089/Frameworks/ipp/lib:/opt/intel/Compiler/11.1/089/Frameworks/ipp/lib:
+LIBRARY_PATH=/opt/intel/Compiler/11.1/089/lib:/opt/intel/Compiler/11.1/089/Frameworks/ipp/lib:/opt/intel/Compiler/11.1/089/Frameworks/mkl/lib/em64t:/opt/intel/Compiler/11.1/089/Frameworks/tbb/ia32/cc4.0.1_os10.5.4/lib:/opt/intel/Compiler/11.1/089/lib:/opt/intel/Compiler/11.1/089/Frameworks/ipp/lib:/opt/intel/Compiler/11.1/089/Frameworks/mkl/lib/em64t:/opt/intel/Compiler/11.1/089/Frameworks/tbb/ia32/cc4.0.1_os10.5.4/lib
+MACHTYPE=x86_64-apple-darwin10.0
+MACOSX_DEPLOYMENT_TARGET=10.6
+
+This is in my .profile just in case
+export CC=gcc
+export F9X=ifort 
+export CXX=g++
+export FC=ifort
+export F77=ifort 
+export F90=ifort 
+
+# -arch x86_64 forces 64-bit compiles for gcc/icc
+# -m64 forces 64-bit compiles for ifort
+# -fPIC forces non-shared libraries (see below)
+export CFLAGS="-arch x86_64 -fPIC"
+export CXXFLAGS="-arch x86_64 -fPIC"
+export FFLAGS="-arch x86_64 -m64 -fPIC"
+export MACOSX_DEPLOYMENT_TARGET=10.6
+export LDFLAGS="-arch x86_64"
+export PATH=/usr/local:/opt/local/bin:$PATH
+
+****NOTES from cmor INSTALL: it strongly recommend to use the --disable-shared argument to the 
+        ./configure when building udunits2, hdf5 and netcdf4. 
+
+# zlib 1.2.5
+-------------------------------------------------------------
+http://www.zlib.net/
+
+$ cd /usr/local/src
+$  mv ~/Downloads/zlib-1.2.5.tar.gz .
+$  tar -zxvf zlib-1.2.5.tar.gz
+$ cd zlib-1.2.5
+$ vim README
+
+$ ./configure -help
+$ ./configure --static --64
+Scan Makefile
+$ more Makefile
+$ make
+
+gcc -arch x86_64  -fPIC -m64   -c -o example.o example.c
+gcc -arch x86_64  -fPIC -m64   -c -o adler32.o adler32.c
+gcc -arch x86_64  -fPIC -m64   -c -o compress.o compress.c
+gcc -arch x86_64  -fPIC -m64   -c -o crc32.o crc32.c
+gcc -arch x86_64  -fPIC -m64   -c -o deflate.o deflate.c
+gcc -arch x86_64  -fPIC -m64   -c -o gzclose.o gzclose.c
+gcc -arch x86_64  -fPIC -m64   -c -o gzlib.o gzlib.c
+gcc -arch x86_64  -fPIC -m64   -c -o gzread.o gzread.c
+gcc -arch x86_64  -fPIC -m64   -c -o gzwrite.o gzwrite.c
+gcc -arch x86_64  -fPIC -m64   -c -o infback.o infback.c
+gcc -arch x86_64  -fPIC -m64   -c -o inffast.o inffast.c
+gcc -arch x86_64  -fPIC -m64   -c -o inflate.o inflate.c
+gcc -arch x86_64  -fPIC -m64   -c -o inftrees.o inftrees.c
+gcc -arch x86_64  -fPIC -m64   -c -o trees.o trees.c
+gcc -arch x86_64  -fPIC -m64   -c -o uncompr.o uncompr.c
+gcc -arch x86_64  -fPIC -m64   -c -o zutil.o zutil.c
+ar rc libz.a adler32.o compress.o crc32.o deflate.o gzclose.o gzlib.o gzread.o gzwrite.o infback.o inffast.o inflate.o inftrees.o trees.o uncompr.o zutil.o 
+gcc -arch x86_64  -fPIC -m64 -o example example.o -L. libz.a
+gcc -arch x86_64  -fPIC -m64   -c -o minigzip.o minigzip.c
+gcc -arch x86_64  -fPIC -m64 -o minigzip minigzip.o -L. libz.a
+
+$ make check
+
+hello world
+zlib version 1.2.5 = 0x1250, compile flags = 0xa9
+uncompress(): hello, hello!
+gzread(): hello, hello!
+gzgets() after gzseek:  hello!
+inflate(): hello, hello!
+large_inflate(): OK
+after inflateSync(): hello, hello!
+inflate with dictionary: hello, hello!
+		*** zlib test OK ***
+
+$ make install
+
+cp libz.a /usr/local/lib
+cp  /usr/local/lib
+cp: missing destination file operand after `/usr/local/lib'
+Try `cp --help' for more information.
+make: *** [install-libs] Error 1
+
+The install partly fails because it expects a shared lib so do manually
+
+$ cp zlib.h zconf.h /usr/local/include/
+
+# SZIP 2.1
+-------------------------------------------------------------
+ftp://ftp.hdfgroup.org/lib-external/szip/
+
+$ cd /usr/local/src
+$ mv ~/Downloads/szip-2.1.tar.gz .
+$ tar -zxvf szip-2.1.tar.gz
+$ cd szip-2.1
+$ vim INSTALL
+
+Installation with encoder
+$ ./configure -help
+$ ./configure --prefix=/usr/local/szip  --disable-shared
+Scan Makefile
+$ more Makefile
+$ make
+$ make check
+> All test passed.
+$ make install
+
+Libraries have been installed in:
+   /usr/local/szip/lib
+
+If you ever happen to want to link against installed libraries
+in a given directory, LIBDIR, you must either use libtool, and
+specify the full pathname of the library, or use the `-LLIBDIR'
+flag during linking and do at least one of the following:
+   - add LIBDIR to the `DYLD_LIBRARY_PATH' environment variable
+     during execution
+
+See any operating system documentation about shared libraries for
+more information, such as the ld(1) and ld.so(8) manual pages.
+-----------------------------------------------------------------
+
+Add to  .profile
+
+export DYLD_LIBRARY_PATH=/usr/local/lib:/usr/local/szip/lib:${DYLD_LIBRARY_PATH}
+
+Restart the terminal and check
+
+$ echo $DYLD_LIBRARY_PATH
+> /usr/local/lib:/usr/local/szip/lib:...
+
+
+# UDUNITS2 2.1.19
+-------------------------------------------------------------
+http://www.unidata.ucar.edu/software/udunits/udunits-2/udunits2.html
+ftp://ftp.unidata.ucar.edu/pub/udunits/udunits-2.1.19.tar.gz
+
+$ cd /usr/local/src
+$ mv ~/Downloads/udunits-2.1.19.tar.gz .
+$ tar -zxvf udunits-2.1.19.tar.gz
+$ cd udunits-2.1.19
+
+$ ./configure -help
+$  ./configure  --prefix=/usr/local --disable-shared
+Scan Makefile
+$ more Makefile
+$  make
+$  make check
+$  make install
+
+Libraries have been installed in:
+   /usr/local/lib
+
+# ossp-uuid 1.6.2	
+-------------------------------------------------------------
+http://www.ossp.org/pkg/lib/uuid/
+
+$ cd /usr/local/src
+$  mv ~/Downloads/uuid-1.6.2.tar.gz .
+$  tar -zxvf uuid-1.6.2.tar.gz
+$ cd uuid-1.6.2
+$ vim INSTALL
+
+$ ./configure -help
+$  ./configure --disable-shared --without-perl --without-php --without-pgsql --includedir=/usr/local/include/ossp
+Scan Makefile
+$ more Makefile
+$  makefile
+$  make check
+$  make install
+
+Libraries have been installed in:
+   /usr/local/lib
+
+Some Make files look for uuid.h in different placesÉ help them out
+$  ln -s /usr/local/include/ossp/uuid.h /usr/local/include/uuid.h
+
+# HDF5 hdf5-1.8.5-patch1
+-------------------------------------------------------------
+
+http://www.hdfgroup.org/HDF5/
+
+$ cd /usr/local/src
+$ mv ~/Downloads/hdf5-1.8.5-patch1.tar.bz2 .
+$ tar -zxvf hdf5-1.8.5-patch1.tar.bz2
+$ cd hdf5-1.8.5-patch1
+$ vim release_docs/INSTALL
+
+For some reason the icc compile link fails but the gcc one works. So I've used gcc throughout these installs.
+
+$ ./configure -help
+
+$  ./configure --prefix=/usr/local/hdf5 --disable-shared --enable-fortran --with-zlib=/usr/local --with-szlib=/usr/local/szip 
+
+	    SUMMARY OF THE HDF5 CONFIGURATION
+	    =================================
+
+General Information:
+-------------------
+		   HDF5 Version: 1.8.5-patch1
+		  Configured on: Tue Sep 14 10:17:45 EDT 2010
+		  Configured by: root@boreas.giss.nasa.gov
+		 Configure mode: production
+		    Host system: i386-apple-darwin10.4.0
+	      Uname information: Darwin boreas.giss.nasa.gov 10.4.0 Darwin Kernel Version 10.4.0: Fri Apr 23 18:28:53 PDT 2010; root:xnu-1504.7.4~1/RELEASE_I386 i386 i386 MacPro4,1 Darwin
+		       Byte sex: little-endian
+		      Libraries: 
+	     Installation point: /usr/local/hdf5
+
+Compiling Options:
+------------------
+               Compilation Mode: production
+                     C Compiler: /usr/bin/gcc ( (GCC) 4.2.1 (Apple Inc. build 5664))
+                         CFLAGS: -arch x86_64  -fPIC
+                      H5_CFLAGS: -std=c99 -pedantic -Wall -Wextra -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-qual -Wcast-align -Wwrite-strings -Wconversion -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Wredundant-decls -Wnested-externs -Winline -Wno-long-long -Wfloat-equal -Wmissing-format-attribute -Wmissing-noreturn -Wpacked -Wdisabled-optimization -Wformat=2 -Wunreachable-code -Wendif-labels -Wdeclaration-after-statement -Wold-style-definition -Winvalid-pch -Wvariadic-macros -Wnonnull -Winit-self -Wmissing-include-dirs -Wswitch-default -Wswitch-enum -Wunused-macros -Wunsafe-loop-optimizations -Wc++-compat -Wvolatile-register-var -Wstrict-overflow -O3 -fomit-frame-pointer -finline-functions
+                      AM_CFLAGS: 
+                       CPPFLAGS: 
+                    H5_CPPFLAGS:   -DNDEBUG -UH5_DEBUG_API
+                    AM_CPPFLAGS: -I/usr/local/szip/include -I/usr/local/include 
+               Shared Libraries: no
+               Static Libraries: yes
+  Statically Linked Executables: no
+                        LDFLAGS: -arch x86_64
+                     AM_LDFLAGS:  -L/usr/local/lib -L/usr/local/szip/lib
+ 	 	Extra libraries:  -lsz -lz -lm 
+ 		       Archiver: ar
+ 		 	 Ranlib: ranlib
+ 	      Debugged Packages: 
+		    API Tracing: no
+
+Languages:
+----------
+                        Fortran: yes
+               Fortran Compiler: /opt/intel/Compiler/11.1/089/bin/intel64/ifort
+                  Fortran Flags: 
+               H5 Fortran Flags:  -O3
+               AM Fortran Flags:  -arch x86_64 -m64  -fPIC
+                            C++: no
+
+Features:
+---------
+                  Parallel HDF5: no
+             High Level library: yes
+                   Threadsafety: no
+            Default API Mapping: v18
+ With Deprecated Public Symbols: yes
+         I/O filters (external): deflate(zlib),szip(encoder)
+         I/O filters (internal): shuffle,fletcher32,nbit,scaleoffset
+                            MPE: no
+                     Direct VFD: no
+                        dmalloc: no
+Clear file buffers before write: yes
+           Using memory checker: no
+         Function Stack Tracing: no
+                           GPFS: no
+      Strict File Format Checks: no
+   Optimization Instrumentation: no
+       Large File Support (LFS): yes
+             H5dump Packed Bits: yes
+
+
+$ make > make.log 2>&1
+$ more make.log 
+$ make check > make_check.log 2>&1
+$ more make_check.log 
+All PASSED or SKIPPED including the fortran tests
+$ make install > make_install.log 2>&1
+$ more make_install.log
+Libraries have been installed in:
+   /usr/local/hdf5/lib
+  
+$ make check-install 
+
+$ export HDF5_DIR=/usr/local/hdf5
+$ export HDF5_LIB_DIR=/usr/local/lib
+$ export HDF5DIR=/usr/local/hdf5
+$ export DYLD_LIBRARY_PATH=/usr/local/hdf5/:${DYLD_LIBRARY_PATH}
+
+Also modify .profile accordingly
+
+$ echo $HDF5_DIR
+> /usr/local/hdf5
+
+$ echo $DYLD_LIBRARY_PATH
+> /usr/local/hdf5/:/usr/local/lib:É.
+
+# NetCDF4 4.1.1
+-------------------------------------------------------------
+
+http://www.unidata.ucar.edu/software/netcdf
+
+$ cd /usr/local/src
+$ mv ~/Downloads/netcdf.tar.gz .
+$ tar -zxvf netcdf.tar.gz
+$ cd netcdf-4.1.1
+$ vim INSTALL
+
+Warning:
+    A bug in the 4.1.1 release means the "make clean" wipes out the
+    documentation files, though it should not. This leads to a
+    need latex warning on make.
+    To fix, unpack the tarball again.
+
+**** Ah, configure sees curl from macports and adds /opt/ to the link paths which sees the netcdf and hdf5 libraries there!
+use --with-curl to stop this!
+
+*** According to netcdf guys the file
+	libnetcdff.a
+    is not created if you follow the --disable-shared recommendation of the cmor INSTALL file
+    this can be over rode with --enable-separate-fortran
+
+$ ./configure -help
+$ ./configure --prefix=/usr/local/netcdf4 --with-curl-config=/usr/bin --with-curl=/usr/lib --disable-shared --enable-netcdf4 --enable-fortran --with-zlib=/usr/local --with-szlib=/usr/local/szip  --with-hdf5=/usr/local/hdf5 --enable-separate-fortran
+Scan Makefile
+$ more Makefile
+
+$ make > make.log 2>&1
+$ more make.log 
+$ make check > make_check.log 2>&1
+$ more make_check.log 
+
+All tests seemed to pass there are these warnings about the HDF5, but on the web I found that is is not an issue and the test passes in any event.
+
+HDF5-DIAG: Error detected in HDF5 (1.8.5-patch1) thread 0:
+  #000: H5O.c line 717 in H5Oget_info_by_idx(): group not found
+    major: Symbol table
+    minor: Object not found
+  #001: H5Gloc.c line 591 in H5G_loc_find_by_idx(): can't find object
+    major: Symbol table
+    minor: Object not found
+  #002: H5Gtraverse.c line 964 in H5G_traverse(): internal path traversal failed
+    major: Symbol table
+    minor: Object not found
+  #003: H5Gtraverse.c line 887 in H5G_traverse_real(): traversal operator failed
+    major: Symbol table
+    minor: Can't move to next iterator location
+  #004: H5Gloc.c line 522 in H5G_loc_find_by_idx_cb(): link not found
+    major: Symbol table
+    minor: Object not found
+  #005: H5Gobj.c line 1204 in H5G_obj_lookup_by_idx(): no creation order index to query
+    major: Symbol table
+    minor: Bad value
+HDF5-DIAG: Error detected in HDF5 (1.8.5-patch1) thread 0:
+  #000: H5O.c line 717 in H5Oget_info_by_idx(): group not found
+    major: Symbol table
+    minor: Object not found
+  #001: H5Gloc.c line 591 in H5G_loc_find_by_idx(): can't find object
+    major: Symbol table
+    minor: Object not found
+  #002: H5Gtraverse.c line 964 in H5G_traverse(): internal path traversal failed
+    major: Symbol table
+    minor: Object not found
+  #003: H5Gtraverse.c line 887 in H5G_traverse_real(): traversal operator failed
+    major: Symbol table
+    minor: Can't move to next iterator location
+  #004: H5Gloc.c line 522 in H5G_loc_find_by_idx_cb(): link not found
+    major: Symbol table
+    minor: Object not found
+  #005: H5Gobj.c line 1204 in H5G_obj_lookup_by_idx(): no creation order index to query
+    major: Symbol table
+    minor: Bad value
+HDF5-DIAG: Error detected in HDF5 (1.8.5-patch1) thread 0:
+  #000: H5O.c line 717 in H5Oget_info_by_idx(): group not found
+    major: Symbol table
+    minor: Object not found
+  #001: H5Gloc.c line 591 in H5G_loc_find_by_idx(): can't find object
+    major: Symbol table
+    minor: Object not found
+  #002: H5Gtraverse.c line 964 in H5G_traverse(): internal path traversal failed
+    major: Symbol table
+    minor: Object not found
+  #003: H5Gtraverse.c line 887 in H5G_traverse_real(): traversal operator failed
+    major: Symbol table
+    minor: Can't move to next iterator location
+  #004: H5Gloc.c line 522 in H5G_loc_find_by_idx_cb(): link not found
+    major: Symbol table
+    minor: Object not found
+  #005: H5Gobj.c line 1204 in H5G_obj_lookup_by_idx(): no creation order index to query
+    major: Symbol table
+    minor: Bad value
+HDF5-DIAG: Error detected in HDF5 (1.8.5-patch1) thread 0:
+  #000: H5O.c line 717 in H5Oget_info_by_idx(): group not found
+    major: Symbol table
+    minor: Object not found
+  #001: H5Gloc.c line 591 in H5G_loc_find_by_idx(): can't find object
+    major: Symbol table
+    minor: Object not found
+  #002: H5Gtraverse.c line 964 in H5G_traverse(): internal path traversal failed
+    major: Symbol table
+    minor: Object not found
+  #003: H5Gtraverse.c line 887 in H5G_traverse_real(): traversal operator failed
+    major: Symbol table
+    minor: Can't move to next iterator location
+  #004: H5Gloc.c line 522 in H5G_loc_find_by_idx_cb(): link not found
+    major: Symbol table
+    minor: Object not found
+  #005: H5Gobj.c line 1204 in H5G_obj_lookup_by_idx(): no creation order index to query
+    major: Symbol table
+    minor: Bad value
+HDF5-DIAG: Error detected in HDF5 (1.8.5-patch1) thread 0:
+  #000: H5O.c line 717 in H5Oget_info_by_idx(): group not found
+    major: Symbol table
+    minor: Object not found
+  #001: H5Gloc.c line 591 in H5G_loc_find_by_idx(): can't find object
+    major: Symbol table
+    minor: Object not found
+  #002: H5Gtraverse.c line 964 in H5G_traverse(): internal path traversal failed
+    major: Symbol table
+    minor: Object not found
+  #003: H5Gtraverse.c line 887 in H5G_traverse_real(): traversal operator failed
+    major: Symbol table
+    minor: Can't move to next iterator location
+  #004: H5Gloc.c line 522 in H5G_loc_find_by_idx_cb(): link not found
+    major: Symbol table
+    minor: Object not found
+  #005: H5Gobj.c line 1204 in H5G_obj_lookup_by_idx(): no creation order index to query
+    major: Symbol table
+    minor: Bad value
+HDF5-DIAG: Error detected in HDF5 (1.8.5-patch1) thread 0:
+  #000: H5O.c line 717 in H5Oget_info_by_idx(): group not found
+    major: Symbol table
+    minor: Object not found
+  #001: H5Gloc.c line 591 in H5G_loc_find_by_idx(): can't find object
+    major: Symbol table
+    minor: Object not found
+  #002: H5Gtraverse.c line 964 in H5G_traverse(): internal path traversal failed
+    major: Symbol table
+    minor: Object not found
+  #003: H5Gtraverse.c line 887 in H5G_traverse_real(): traversal operator failed
+    major: Symbol table
+    minor: Can't move to next iterator location
+  #004: H5Gloc.c line 522 in H5G_loc_find_by_idx_cb(): link not found
+    major: Symbol table
+    minor: Object not found
+  #005: H5Gobj.c line 1204 in H5G_obj_lookup_by_idx(): no creation order index to query
+    major: Symbol table
+    minor: Bad value
+
+*** Testing HDF5/NetCDF-4 interoperability...
+*** Creating a HDF5 file with one var with two dimension scales...ok.
+*** Checking that HDF5 file can be read by netCDF-4, and adding an att...ok.
+*** Checking that one var, two dimscales, one att file can still be read by HDF5...ok.
+*** Creating a HDF5 file with one var and no dimension scales...ok.
+*** Creating a HDF5 file with one var and no dimension scales, without creation ordering...ok.
+*** Creating a HDF5 file with two vars and no dimension scales, without creation ordering...ok.
+*** Creating a HDF5 file with fixed length string...ok.
+*** Checking a HDF5 file with scalar, fixed-length string dataset...ok.
+*** Tests successful!
+PASS: tst_interops
+
+$ make install > make_install.log 2>&1
+$ more make_install.log
+
+Libraries have been installed in:
+   /usr/local/netcdf4/lib
+
++-------------------------------------------------------------+
+| Congratulations! You have successfully installed netCDF!    |
+|                                                             |
+| You can use script "nc-config" to find out the relevant     |
+| compiler options to build your application. Enter           |
+|                                                             |
+|     nc-config --help                                        |
+|                                                             |
+| for additional information. 
+
+$ /usr/local/netcdf4/bin/nc-config --libs
+> -L/usr/local/netcdf4/lib -lnetcdf -L/usr/local/hdf5/lib -lhdf5_hl -lhdf5 -L/usr/local/lib -lz -lm -L/usr/local/szip/lib -lsz -lcurl
+
+$ /usr/local/netcdf4/bin/nc-config --fflags
+> -arch x86_64 -m64 -fPIC -I/usr/local/netcdf4/include
+
+$ /usr/local/netcdf4/bin/nc-config --cflags
+> --I/usr/local/netcdf4/include
+
+$ export NETCDF4_DIR=/usr/local/netcdf4
+
+$ export DYLD_LIBRARY_PATH=/usr/local/netcdf4:${DYLD_LIBRARY_PATH}
+
+Also modify .profile accordingly
+
+$ echo $NETCDF4_DIR
+> /usr/local/netcdf4
+
+$ echo $DYLD_LIBRARY_PATH
+> /usr/local/netcdf4:É
+
+# for cmor 2.2 (9/8/2010)
+-------------------------------------------------------------
+http://www2-pcmdi.llnl.gov/cmor
+
+$ cd /usr/local/src
+$ git clone http://esgf.org/git/cmor.git
+$ cd /usr/local/src/cmor
+$ vim INSTALL
+
+**WATCH OUT THIS REEFERS TO NETCDF, HDF ETC not COSP!
+   NOTES2: You only need to install the C libraries for these. Usually you can turn off
+	   the fortran using --disable-fortran
+
+
+$ ./configure -help
+$ ./configure --prefix=/usr/local --with-netcdf=/usr/local/netcdf4 --with-hdf5=/usr/local/hdf5 --with-udunits2=/usr/local --with-uuid=/usr/local/
+
+configure: ************************************************************************
+configure:                               SUMMARY
+configure:                             VERSION: 2.2.1 (commit: 4bbd53da1c465cd825e7c3150813dad699f6f894)
+configure: ************************************************************************
+configure: 
+configure: ........................................................................
+configure: ...                             COMPILERS
+configure: ........................................................................
+configure: 
+configure:             FORTRAN
+configure:  FC=ifort
+configure:  F77=ifort
+configure:  FFLAGS=-arch x86_64 -m64  -fPIC
+configure:  FCFLAGS=-g
+configure: ........................................................................
+configure: ...                             EXTERNALS                            ...
+configure: ........................................................................
+./configure: line 5667: test: !=: unary operator expected
+configure: 
+configure: UUID
+configure:  CFLAGS  :  -I/usr/local//include
+configure:  LDFLAGS :  -L/usr/local//lib  -R/usr/local//lib -luuid
+configure: 
+configure: UDUNITS2
+configure:  CFLAGS  :  -I/usr/local/include
+configure:  LDFLAGS :  -L/usr/local/lib  -R/usr/local/lib -ludunits2 -lexpat
+configure: 
+configure: NetCDF4
+configure:  CFLAGS  : -I/usr/local/netcdf4/include
+configure:  LDFLAGS : -L/usr/local/netcdf4/lib -lnetcdf -L/usr/local/hdf5/lib -lhdf5_hl -lhdf5 -L/usr/local/lib -lz -lm -L/usr/local/szip/lib -lsz -lcurl
+configure: 
+configure:  PYTHON
+configure:  Not built, not used it tests
+configure: 
+configure: Type "make" to build cmor
+configure: Type "make install" to build and install cmor to /usr/local
+configure: 
+configure: Type "make test" to build and test cmor code only
+configure: Type "make test_C" to build cmor and test C only
+configure: Type "make test_fortran" to build cmor and test fortran only
+configure: 
+configure: You can compile C or FORTRAN code using the compilation lines shown in file: compile_line.txt and printed bellow:
+configure: 
+configure: 
+# The following line will compile "C" code mycode.c with cmor, additional libraries mycode.c may requires should be added to this line
+ gcc -g  -DCOLOREDOUTPUT -I/usr/local/netcdf4/include -Iinclude -Iinclude/cdTime   mycode.c -L/usr/local/lib -I/usr/local/include  -L. -lcmor -I/usr/local/netcdf4/include -L/usr/local/netcdf4/lib -lnetcdf -L/usr/local/hdf5/lib -lhdf5_hl -lhdf5 -L/usr/local/lib -lz -lm -L/usr/local/szip/lib -lsz -lcurl  -L/usr/local/lib  -R/usr/local/lib -ludunits2 -lexpat  -I/usr/local/include  -L/usr/local//lib  -R/usr/local//lib -luuid  -I/usr/local//include  -o mycode
+
+# The following line will compile "FORTRAN" code mycode.f90 with cmor, additional libraries mycode.f90 may requires should be added to this line
+ifort -g -g mycode.f90 -L/usr/local/lib -L. -lcmor -I/usr/local/netcdf4/include -L/usr/local/netcdf4/lib -lnetcdf -L/usr/local/hdf5/lib -lhdf5_hl -lhdf5 -L/usr/local/lib -lz -lm -L/usr/local/szip/lib -lsz -lcurl  -L/usr/local/lib  -R/usr/local/lib -ludunits2 -lexpat  -I/usr/local/include  -L/usr/local//lib  -R/usr/local//lib -luuid  -I/usr/local//include   -o mycode
+
+Scan Makefile
+$ more Makefile
+
+**** Note no matter what I pass in for CFLAGS or FCFLAGS.FFLAGSsome tests fail in configure and I always get the default    
+	CFLAGS=-g,CFFLAGS=-g
+
+This helps for ifort but not gcc
+
+$ ./configure --prefix=/usr/local --with-netcdf=/usr/local/netcdf4 --with-hdf5=/usr/local/hdf5 --with-udunits2=/usr/local --with-uuid=/usr/local/  "CFLAGS=-arch x86_64 -fPIC" "FFLAGS=-arch x86_64 -m64 -fPIC" "FCFLAGS=-arch x86_64 -m64 -fPIC" "FC=ifort" "CXXFLAGS=-arch x86_64 -fPIC"
+
+also make test issues a bunch of 
+ > ifort: command line warning #10006: ignoring unknown option '-R/usr/local/lib'
+These being somesort of Sun computer specific things I don't need to worry about or affect the results
+
+$ ./configure --prefix=/usr/local --with-netcdf=/usr/local/netcdf4 --with-hdf5=/usr/local/hdf5 --with-udunits2=/usr/local --with-uuid=/usr/local/
+
+So force the matter by editing the Makefile as so
+
+#!/usr/bin/env sh
+FC=ifort
+CPPFLAGS_USER=""
+FFLAGS_USER="-fPIC"
+#MODULE_SUFFIX="mod"
+PREFIX=/usr/local
+FCFLAGS=-arch x86_64 -m64 -fPIC -c -g
+CFLAGS=-arch x86_64 -fPIC -c -g
+PYTHONEXEC= 
+NO_COLOR2=\x1b[0m
+OK_COLOR2=\x1b[2;34m
+NO_COLOR=${NO_COLOR2}
+OK_COLOR=${OK_COLOR2}
+
+
+# Library name
+LIBNAME = libcmor.a
+
+# Library sources
+#LIBSOURCES = Src/cmor.c Src/cmor_variables.c Src/cmor_axes.c Src/cmor_tables.c Src/cmor_grids.c Src/cdTime/cdTimeConv.c Src/cdTime/cdUtil.c Src/cdTime/timeConv.c Src/cdTime/timeArith.c
+LIBSOURCES = Src/cmor.c Src/cmor_variables.c Src/cmor_axes.c Src/cmor_tables.c Src/cmor_grids.c Src/cdTime/cdTimeConv.c Src/cdTime/cdUtil.c Src/cdTime/timeConv.c Src/cdTime/timeArith.c Src/cmor_cfortran_interface.c Src/cmor_md5.c
+LIBFSOURCES = Src/cmor_fortran_interface.f90
+
+LIBFILES = cmor.o cmor_axes.o cmor_variables.o cmor_tables.o cdTimeConv.o cdUtil.o timeConv.o timeArith.o cmor_grids.o cmor_md5.o  cmor_cfortran_interface.o cmor_fortran_interface.o
+
+#Include Files
+INCFILES = include/cmor.h  include/cmor_func_def.h include/cmor_md5.h include/cdTime/cddrs.h	include/cdTime/cddrsint.h  include/cdTime/cdms.h  include/cdTime/cdmsint.h  include/cdTime/cdmsint_new.h  include/cdTime/cdrra.h  include/cdTime/cdunif.h  include/cdTime/cdunifint.h  include/cdTime/cdunifpp/cdunifpp.h  include/cdTime/cdunifpp/cdunifpp_frename.h  include/cdTime/cdunifpp/crayio.h  include/cdTime/cdunifpp/util.h  include/cdTime/cdunifpp/vardef.h  include/cdTime/cfortran.h  include/cdTime/drscdf.h  include/cdTime/drsdef.h	include/cdTime/fcddrs.h  include/cdTime/gaussLats.h  include/cdTime/grads.h  include/cdTime/gx.h  include/cdTime/isdb.h
+
+# Temporary Files
+TMPFILES = *~ $(LIBFILES) *.mod a.out *.stb Test/*.nc Test/IPCC_Fourth_Assessment *.LOG* *.dSYM Test/IPCC Test/CMIP5 CMIP5
+DISTFILES = libcmor.a
+DEPEND= makedepend $(CFLAGS) -I/usr/local/netcdf4/include -Iinclude -Iinclude/cdTime  -I/usr/local/netcdf4/include  -I/usr/local/include  -I/usr/local//include 
+
+all:    cmor
+	@echo
+depend:  $(LIBSOURCES)
+	${DEPEND}  $(LIBSOURCES)
+cmor.o: Src/cmor.c include/cmor.h include/cmor_func_def.h
+	gcc $(CFLAGS)  -DCOLOREDOUTPUT -I/usr/local/netcdf4/include -Iinclude -Iinclude/cdTime  -I/usr/local/netcdf4/include  -I/usr/local/include  -I/usr/local//include  Src/cmor.c
+cmor_variables.o: Src/cmor_variables.c include/cmor.h include/cmor_func_def.h
+	gcc $(CFLAGS)  -DCOLOREDOUTPUT -I/usr/local/netcdf4/include -Iinclude -Iinclude/cdTime  -I/usr/local/netcdf4/include  -I/usr/local/include  -I/usr/local//include  Src/cmor_variables.c
+cmor_axes.o: Src/cmor_axes.c include/cmor.h include/cmor_func_def.h
+	gcc $(CFLAGS)  -DCOLOREDOUTPUT -I/usr/local/netcdf4/include -Iinclude -Iinclude/cdTime  -I/usr/local/netcdf4/include  -I/usr/local/include  -I/usr/local//include  Src/cmor_axes.c
+cmor_tables.o: Src/cmor_tables.c include/cmor.h include/cmor_func_def.h
+	gcc $(CFLAGS)  -DCOLOREDOUTPUT -I/usr/local/netcdf4/include -Iinclude -Iinclude/cdTime  -I/usr/local/netcdf4/include  -I/usr/local/include  -I/usr/local//include  Src/cmor_tables.c
+cmor_grids.o: Src/cmor_grids.c include/cmor.h include/cmor_func_def.h
+	gcc $(CFLAGS)  -DCOLOREDOUTPUT -I/usr/local/netcdf4/include -Iinclude -Iinclude/cdTime  -I/usr/local/netcdf4/include  -I/usr/local/include  -I/usr/local//include  Src/cmor_grids.c
+cmor_md5.o: Src/cmor_md5.c include/cmor.h include/cmor_func_def.h include/cmor_md5.h
+	gcc $(CFLAGS)  -DCOLOREDOUTPUT -I/usr/local/netcdf4/include -Iinclude -Iinclude/cdTime  -I/usr/local/netcdf4/include  -I/usr/local/include  -I/usr/local//include  Src/cmor_md5.c
+cmor_cfortran_interface.o: Src/cmor_cfortran_interface.c include/cmor.h include/cmor_func_def.h
+	gcc $(CFLAGS)  -DCOLOREDOUTPUT -I/usr/local/netcdf4/include -Iinclude -Iinclude/cdTime  -I/usr/local/netcdf4/include  -I/usr/local/include  -I/usr/local//include  Src/cmor_cfortran_interface.c
+cdTimeConv.o: Src/cdTime/cdTimeConv.c include/cmor.h include/cmor_func_def.h
+	gcc $(CFLAGS)  -DCOLOREDOUTPUT -I/usr/local/netcdf4/include -Iinclude -Iinclude/cdTime  -I/usr/local/netcdf4/include  -I/usr/local/include  -I/usr/local//include  Src/cdTime/cdTimeConv.c
+cdUtil.o: Src/cdTime/cdUtil.c include/cmor.h include/cmor_func_def.h
+	gcc $(CFLAGS)  -DCOLOREDOUTPUT -I/usr/local/netcdf4/include -Iinclude -Iinclude/cdTime  -I/usr/local/netcdf4/include  -I/usr/local/include  -I/usr/local//include  Src/cdTime/cdUtil.c
+timeConv.o: Src/cdTime/timeConv.c include/cmor.h include/cmor_func_def.h
+	gcc $(CFLAGS)  -DCOLOREDOUTPUT -I/usr/local/netcdf4/include -Iinclude -Iinclude/cdTime  -I/usr/local/netcdf4/include  -I/usr/local/include  -I/usr/local//include  Src/cdTime/timeConv.c
+timeArith.o:Src/cdTime/timeArith.c include/cmor.h include/cmor_func_def.h
+	gcc $(CFLAGS)  -DCOLOREDOUTPUT -I/usr/local/netcdf4/include -Iinclude -Iinclude/cdTime  -I/usr/local/netcdf4/include  -I/usr/local/include  -I/usr/local//include  Src/cdTime/timeArith.c
+cmor_fortran_interface.o: Src/cmor_fortran_interface.f90
+	ifort $(FCFLAGS)  -DCOLOREDOUTPUT Src/cmor_fortran_interface.f90
+cmor:  $(LIBFILES)  
+	@ar crv $(LIBNAME) $(LIBFILES) 
+	@ranlib $(LIBNAME)
+clean:
+	@echo "Cleaning [$(WHEREAMI)] ..."
+	@rm -rf $(TMPFILES)
+distclean: clean
+	@echo "Completely cleaning [$(WHEREAMI)]..."
+	@rm -f $(DISTFILES)
+install: cmor
+	mkdir -p /usr/local/lib
+	mkdir -p /usr/local/include
+	mkdir -p /usr/local/include/cdTime
+	mkdir -p /usr/local/include/cdTime/cdunifpp
+	cp -p $(LIBNAME) /usr/local/lib
+	cp -pr include/*.h cmor_users_functions.* /usr/local/include
+	cp -pr include/cdTime/*.h /usr/local/include/cdTime
+	cp -pr include/cdTime/cdunifpp/*.h /usr/local/include/cdTime/cdunifpp
+uninstall: distclean 
+	rm /usr/local/lib/$(LIBNAME)    
+	cd /usr/local ; rm $(INCFILES)  
+backup: clean
+	@echo "Creating full backup tar file..."
+	@(cd ..; \
+	@TGZNAME=$(TGZDIR)/cmor_`$(TIMESTAMP)`_full.tgz; \
+	@tar cfz $$TGZNAME Cmor; \
+	@touch $(TIMESTAMPDIR)/cmor_`$(TIMESTAMP)`_full.time; \
+	@echo "Full backup tar file created : $$TGZNAME")
+test:  cmor test_C test_fortran  
+	@echo "All C and Fortran Test passed successfully"
+test_C: cmor 
+	@rm -f ./ipcc_test_code ; gcc $(CFLAGS) -I/usr/local/netcdf4/include -Iinclude -Iinclude/cdTime   Test/ipcc_test_code.c -L/usr/local/lib -I/usr/local/include  -L. -lcmor -I/usr/local/netcdf4/include -L/usr/local/netcdf4/lib -lnetcdf -L/usr/local/hdf5/lib -lhdf5_hl -lhdf5 -L/usr/local/lib -lz -lm -L/usr/local/szip/lib -lsz -lcurl  -L/usr/local/lib  -R/usr/local/lib -ludunits2 -lexpat  -I/usr/local/include  -L/usr/local//lib  -R/usr/local//lib -luuid  -I/usr/local//include -o ipcc_test_code  >/dev/null 2>/dev/null; ./ipcc_test_code >/dev/null 2>/dev/null
+	@rm -f test_grid ; gcc $(CFLAGS) -I/usr/local/netcdf4/include -Iinclude -Iinclude/cdTime   Test/test_grid.c -L/usr/local/lib -I/usr/local/include  -L. -lcmor -I/usr/local/netcdf4/include -L/usr/local/netcdf4/lib -lnetcdf -L/usr/local/hdf5/lib -lhdf5_hl -lhdf5 -L/usr/local/lib -lz -lm -L/usr/local/szip/lib -lsz -lcurl  -L/usr/local/lib  -R/usr/local/lib -ludunits2 -lexpat  -I/usr/local/include  -L/usr/local//lib  -R/usr/local//lib -luuid  -I/usr/local//include -o test_grid >/dev/null 2>/dev/null; ./test_grid >/dev/null 2>/dev/null;
+	@rm -f test_lots_of_variables ; gcc $(CFLAGS) -I/usr/local/netcdf4/include -Iinclude -Iinclude/cdTime   Test/test_lots_of_variables.c -L/usr/local/lib -I/usr/local/include  -L. -lcmor -I/usr/local/netcdf4/include -L/usr/local/netcdf4/lib -lnetcdf -L/usr/local/hdf5/lib -lhdf5_hl -lhdf5 -L/usr/local/lib -lz -lm -L/usr/local/szip/lib -lsz -lcurl  -L/usr/local/lib  -R/usr/local/lib -ludunits2 -lexpat  -I/usr/local/include  -L/usr/local//lib  -R/usr/local//lib -luuid  -I/usr/local//include -o test_lots_of_variables >/dev/null 2>/dev/null; ./test_lots_of_variables >/dev/null 2>/dev/null;
+python:
+	@echo "Building Python interface"
+	@${PYTHONEXEC} setup.py install  
+test_a_python:
+	@echo "${OK_COLOR}Testing ${TEST_NAME} ${NO_COLOR}"
+	${PYTHONEXEC} ${TEST_NAME} >/dev/null 2>/dev/null
+test_python: python
+	@env TEST_NAME=Test/test_python_direct_calls.py make test_a_python
+	@env TEST_NAME=Test/test_python_user_interface_00.py make test_a_python
+	@env TEST_NAME=Test/test_python_user_interface_01.py make test_a_python
+	@env TEST_NAME=Test/test_python_user_interface_03.py make test_a_python
+	@env TEST_NAME=Test/test_python_common.py make test_a_python
+	@env TEST_NAME=Test/cmor_speed_and_compression.py make test_a_python
+	@env TEST_NAME=Test/cmor_speed_and_compression_01.py make test_a_python
+#	@env TEST_NAME=Test/cmor_speed_and_compression_02.py make test_a_python
+	@env TEST_NAME=Test/test_compression.py make test_a_python
+	@env TEST_NAME=Test/test_python_appending.py make test_a_python
+	@env TEST_NAME=Test/test_python_bounds_request.py make test_a_python
+	@env TEST_NAME=Test/test_python_new_tables.py make test_a_python
+#	@env TEST_NAME=Test/test_python_index_coord.py make test_a_python
+	@env TEST_NAME=Test/test_python_jamie.py make test_a_python
+	@env TEST_NAME=Test/test_python_jamie_2.py make test_a_python
+	@env TEST_NAME=Test/test_python_jamie_3.py make test_a_python
+	@env TEST_NAME=Test/test_python_jamie_4.py make test_a_python
+	@env TEST_NAME=Test/test_python_jamie_6.py make test_a_python
+	@env TEST_NAME=Test/test_python_memory_check.py make test_a_python
+	@env TEST_NAME=Test/test_python_open_close_cmor_multiple.py make test_a_python
+	@env TEST_NAME=Test/test_python_jamie_7.py make test_a_python
+	@env TEST_NAME=Test/test_python_joerg_1.py make test_a_python
+	@env TEST_NAME=Test/test_python_joerg_2.py make test_a_python
+	@env TEST_NAME=Test/test_python_joerg_3.py make test_a_python
+	@env TEST_NAME=Test/test_python_YYYMMDDHH_exp_fmt.py make test_a_python
+	@env TEST_NAME=Test/test_python_region.py make test_a_python
+
+test_case:
+	@echo "${OK_COLOR}Testing: "${TEST_NAME}" with input file: ${INPUT_FILE}${NO_COLOR}"
+	@rm -f ./${TEST_NAME} 2>/dev/null ; ifort $(FCFLAGS)  Test/${TEST_NAME}.f90 -L/usr/local/lib -L. -lcmor -I/usr/local/netcdf4/include -L/usr/local/netcdf4/lib -lnetcdf -L/usr/local/hdf5/lib -lhdf5_hl -lhdf5 -L/usr/local/lib -lz -lm -L/usr/local/szip/lib -lsz -lcurl  -L/usr/local/lib  -I/usr/local/include  -L/usr/local//lib  -luuid  -I/usr/local//include   -o ${TEST_NAME} ;
+	@./${TEST_NAME} >/dev/null 2>/dev/null < ${INPUT_FILE} ;
+	@ rm ./${TEST_NAME}
+ifeq ( ,python)
+	@env TEST_NAME="Test/check_results.py ${TEST_NAME}" make test_a_python
+endif
+test_case_old_cmor_tables:
+	@echo "Testing: "${TEST_NAME}" with input file: "${INPUT_FILE}
+	@rm -f ./${TEST_NAME} 2>/dev/null ; ifort $(FCFLAGS)  Test/old_cmor_tables/${TEST_NAME}.f90 -L/usr/local/lib -L. -lcmor -I/usr/local/netcdf4/include -L/usr/local/netcdf4/lib -lnetcdf -L/usr/local/hdf5/lib -lhdf5_hl -lhdf5 -L/usr/local/lib -lz -lm -L/usr/local/szip/lib -lsz -lcurl  -L/usr/local/lib -ludunits2 -lexpat  -I/usr/local/include  -L/usr/local//lib -luuid  -I/usr/local//include   -o ${TEST_NAME} ;
+	@./${TEST_NAME} >/dev/null 2>/dev/null < ${INPUT_FILE} ;
+	@ rm ./${TEST_NAME}
+ifeq ( ,python)
+	@env TEST_NAME="Test/check_results.py old_cmor_tables_${TEST_NAME}" make test_a_python
+endif
+test_fortran_old_cmor_tables: cmor
+	@env TEST_NAME="test_any_from_asc" INPUT_FILE="Test/tas_3D_noreorder.input" make test_case_old_cmor_tables
+	@env TEST_NAME="test_any_from_asc" INPUT_FILE="Test/3D_txy.input" make test_case_old_cmor_tables
+	@env TEST_NAME="test_any_from_asc" INPUT_FILE="Test/3D_txy_split_lon.input" make test_case_old_cmor_tables
+	@env TEST_NAME="test_any_from_asc" INPUT_FILE="Test/3D_xty_split_lon.input" make test_case_old_cmor_tables
+	@env TEST_NAME="test_any_from_asc_d" INPUT_FILE="Test/tas_3D_noreorder.input" make test_case_old_cmor_tables
+	@env TEST_NAME="test_any_from_asc_d" INPUT_FILE="Test/3D_txy.input" make test_case_old_cmor_tables
+	@env TEST_NAME="test_any_from_asc_d" INPUT_FILE="Test/3D_txy_split_lon.input" make test_case_old_cmor_tables
+	@env TEST_NAME="test_any_from_asc_d" INPUT_FILE="Test/3D_xty_split_lon.input" make test_case_old_cmor_tables
+	@env TEST_NAME="karls_test" INPUT_FILE="Test/noinput" make test_case_old_cmor_tables
+	@env TEST_NAME="test1" INPUT_FILE="Test/noinput" make test_case_old_cmor_tables
+	@env TEST_NAME="test2" INPUT_FILE="Test/noinput" make test_case_old_cmor_tables
+	@env TEST_NAME="test3" INPUT_FILE="Test/noinput" make test_case_old_cmor_tables
+	@env TEST_NAME="test4" INPUT_FILE="Test/noinput" make test_case_old_cmor_tables
+	@env TEST_NAME="main_prog" INPUT_FILE="Test/noinput" make test_case_old_cmor_tables
+	@env TEST_NAME="test_any_from_asc_i" INPUT_FILE="Test/tas_mytest_3d_i.input" make test_case_old_cmor_tables
+	@env TEST_NAME="mytest_4d_r" INPUT_FILE="Test/noinput" make test_case_old_cmor_tables
+	@env TEST_NAME="rewrite_harvardf_data" INPUT_FILE="Test/noinput" make test_case_old_cmor_tables
+	@env TEST_NAME="test_3h" INPUT_FILE="Test/noinput" make test_case_old_cmor_tables
+	@env TEST_NAME="test_dimensionless" INPUT_FILE="Test/noinput" make test_case_old_cmor_tables
+	@env TEST_NAME="test_fortran_example_00" INPUT_FILE="Test/noinput" make test_case_old_cmor_tables
+	@env TEST_NAME="test_fortran_example_01" INPUT_FILE="Test/noinput" make test_case_old_cmor_tables
+	@env TEST_NAME="test_station_data" INPUT_FILE="Test/noinput" make test_case_old_cmor_tables
+	@env TEST_NAME="test_region" INPUT_FILE="Test/noinput" make test_case_old_cmor_tables
+	@env TEST_NAME="test_sigma" INPUT_FILE="Test/noinput" make test_case_old_cmor_tables
+	@env TEST_NAME="test_singleton" INPUT_FILE="Test/noinput" make test_case_old_cmor_tables
+	@env TEST_NAME="mytest_4d_r_big_array" INPUT_FILE="Test/noinput" make test_case_old_cmor_tables
+	@env TEST_NAME="mytest_4d_d_big_array_2" INPUT_FILE="Test/noinput" make test_case_old_cmor_tables
+	@env TEST_NAME="mytest_4d_d_big_array_3" INPUT_FILE="Test/noinput" make test_case_old_cmor_tables
+	@env TEST_NAME="mytest_4d_d_big_array_4" INPUT_FILE="Test/noinput" make test_case_old_cmor_tables
+	@env TEST_NAME="mytest_4d_d_big_array_5" INPUT_FILE="Test/noinput" make test_case_old_cmor_tables
+	@env TEST_NAME="climatology_test_code" INPUT_FILE="Test/noinput" make test_case_old_cmor_tables
+	@env TEST_NAME="test_lots_of_variables" INPUT_FILE="Test/noinput" make test_case_old_cmor_tables
+	@env TEST_NAME="test_shrt_exp_nm_set_att_initi" INPUT_FILE="Test/noinput" make test_case_old_cmor_tables
+	@env TEST_NAME="test_sophie" INPUT_FILE="Test/noinput" make test_case_old_cmor_tables
+test_fortran: cmor
+	@env TEST_NAME="test_any_from_asc" INPUT_FILE="Test/tas_3D_noreorder.input" make test_case
+	@env TEST_NAME="test_any_from_asc" INPUT_FILE="Test/3D_txy.input" make test_case
+	@env TEST_NAME="test_any_from_asc" INPUT_FILE="Test/3D_txy_split_lon.input" make test_case
+	@env TEST_NAME="test_any_from_asc" INPUT_FILE="Test/3D_xty_split_lon.input" make test_case
+	@env TEST_NAME="test_any_from_asc_d" INPUT_FILE="Test/tas_3D_noreorder.input" make test_case
+	@env TEST_NAME="test_any_from_asc_d" INPUT_FILE="Test/3D_txy.input" make test_case
+	@env TEST_NAME="test_any_from_asc_d" INPUT_FILE="Test/3D_txy_split_lon.input" make test_case
+	@env TEST_NAME="test_any_from_asc_d" INPUT_FILE="Test/3D_xty_split_lon.input" make test_case
+	@env TEST_NAME="karls_test" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="test1" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="test2" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="test3" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="test4" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="main_prog" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="test_any_from_asc_i" INPUT_FILE="Test/tas_mytest_3d_i.input" make test_case
+	@env TEST_NAME="mytest_4d_r" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="rewrite_harvardf_data" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="test_3h" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="test_dimensionless" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="test_fortran_example_00" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="test_fortran_example_01" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="test_station_data" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="test_cmor_grid_alejandro" INPUT_FILE="Test/alejandro.txt" make test_case
+	@env TEST_NAME="test_cmor_grid_alejandro" INPUT_FILE="Test/alejandro_1.txt" make test_case
+	@env TEST_NAME="test_cmor_grid_alejandro" INPUT_FILE="Test/alejandro_2.txt" make test_case
+	@env TEST_NAME="test_region" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="test_sigma" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="test_singleton" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="mytest_4d_r_big_array" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="mytest_4d_d_big_array_2" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="mytest_4d_d_big_array_3" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="mytest_4d_d_big_array_4" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="mytest_4d_d_big_array_5" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="climatology_test_code" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="test_lots_of_variables" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="test_shrt_exp_nm_set_att_initi" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="test_sophie" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="ipcc_test_code" INPUT_FILE="Test/noinput" make test_case
+atest: cmor
+#	@env TEST_NAME="mytest_4d_d_big_array_2" INPUT_FILE="Test/noinput" make test_case
+	@env TEST_NAME="test_lots_of_variables" INPUT_FILE="Test/noinput" make test_case
+#	@env TEST_NAME="wegner_test" INPUT_FILE="Test/noinput" make test_case
+
+
+$ make > make.log 2>&1
+$ more make.log 
+$ make test > make_test.log 2>&1
+$ more make_test.log 
+> make: *** [test_C] Error 126
+
+Okay, well let's go back to the default Makefile 
+$ rm Makefile
+
+$  ./configure --prefix=/usr/local --with-netcdf=/usr/local/netcdf4 --with-hdf5=/usr/local/hdf5 --with-udunits2=/usr/local --with-uuid=/usr/local/  "CFLAGS=-arch x86_64 -fPIC" "FFLAGS=-arch x86_64 -m64 -fPIC" "FCFLAGS=-arch x86_64 -m64 -fPIC" "FC=ifort" "CXXFLAGS=-arch x86_64 -fPIC"
+
+$ make > make.log 2>&1
+$ more make.log 
+$ make test > make_test.log 2>&1
+$ more make_test.log 
+> All C and Fortran Test passed successfully
+
+Well, the C libraries don't seem like they are the same as those from netcdf/hdf but the fortran ones should beÉ.
+
+$  make install
+> cp -p libcmor.a /usr/local/lib
+> cp -pr include/*.h cmor_users_functions.* /usr/local/include
+> cp -pr include/cdTime/*.h /usr/local/include/cdTime
+> cp -pr include/cdTime/cdunifpp/*.h /usr/local/include/cdTime/cdunifpp
+
+$ grep "cmor_users_functions" /usr/local/lib/*
+>  Binary file libcmor.a matches
+
+so it seems the fortran API is working.
+
+# COSP 1.3
+-------------------------------------------------------------
+http://cfmip.metoffice.com/COSP.html
+
+$ cd /usr/local/src
+$  tar -zxvf cosp.v1.3.rev597.tar.gz
+$ cd COSP
+$ vim README.txt
+$ vim Makefile
+
+Start Modify Makefile
+
+########################################################################
+#              Adapt these variables to your environment
+########################################################################
+F90      = ifort
+F90FLAGS = -arch x86_64 -m64 -fPIC
+# -------- Third Party Libraries -----------
+NCDF_INC = /usr/local/netcdf4/include
+NCDF_LIB = /usr/local/netcdf4/lib
+UDUNITS_LIB = /usr/local/lib
+UUID_INC = /usr/local/include
+UUID_LIB = /usr/local/lib
+HDF5_INC = /usr/local/hdf5/include
+HDF5_LIB = /usr/local/hdf5/lib
+CMOR_INC = /usr/local/include
+CMOR_LIB = /usr/local/lib
+# These are to find the szip library                                                                                                                                            
+INC = /usr/local/szip/include             
+LIB = /usr/local/szip/lib 
+# Help the linker
+LD_LIBRARY_PATH=/usr/local/lib:/usr/local/hdf5/:/usr/local/netcdf4:/usr/local/szip/lib
+
+# ---------------- RTTOV ---------------------
+RTTOV_PATH     = /usr/local/src/rttov93
+RTTOV_LIB_PATH = $(RTTOV_PATH)/lib
+RTTOV_INC_PATH = $(RTTOV_PATH)/include
+RTTOV_MOD_PATH = $(RTTOV_PATH)/mod
+# --------- Non-optional simulators ----------
+RS_PATH = quickbeam
+CS_PATH = actsim
+LLNL_PATH = llnl
+ISCCP_PATH = icarus-scops-4.1-bsd
+MISR_PATH = MISR_simulator
+MODIS_PATH = MODIS_simulator
+########################################################################
+#              End of modifications
+########################################################################
+
+also modify the line
+
+	-L${RTTOV_LIB_PATH} -lrttov9.1 \    
+to
+
+	-L${RTTOV_LIB_PATH} -lrttov9.3 \    
+
+END Modify Makefile
+	
+
+Get RTTOV WorkingÉ.
+
+	# for RTTOV 9.3 
+	-------------------------------------------------------------
+
+	http://research.metoffice.gov.uk/research/interproj/nwpsaf/rtm/rtm_rttov9.html
+
+	$ cd /usr/local/src
+	$  tar -zxvf rttov93.tar.gz
+	$ cd rttov93
+	$ vim readme.txt
+
+	Downloaded (9/9/2010)
+ 	  $  tar -zxvf rttov93_bugfixes.tar.gz
+	  $ cd rttov93_bugfixes
+  
+    	  $  mv rttov_id.ksh ../scripts
+          $  mv *.F90 ../src
+
+	  copied contents over originals
+		/scripts/rttov_id.ksh
+
+		/src/rttov_cldstr_ad.F90
+		/src/rttov_eddington_ad.F90  
+		/src/rttov_integrate_tl.F90  
+		/src/rttov_opdep_9_solar.F90     
+		/src/rttov_opdep_9_tl.F90         
+		/src/rttov_refsun.F90
+		/src/rttov_cldstr_k.F90   
+		/src/rttov_eddington_tl.F90  
+		/src/rttov_layeravg_ad.F90  
+		/src/rttov_opdep_9_solar_ad.F90  
+		/src/rttov_opdpscattir.F90        
+		/src/rttov_types.F90
+		/src/rttov_const.F90      
+		/src/rttov_initcoeffs.F90    
+		/src/rttov_opdep_9_ad.F90    
+		/src/rttov_opdep_9_solar_k.F90   
+		/src/rttov_readcoeffs_ascii.F90   
+		/src/tstrad.F90
+		/src/rttov_eddington.F90  
+		/src/rttov_integrate_ad.F90  
+		/src/rttov_opdep_9_k.F90     
+		/src/rttov_opdep_9_solar_tl.F90  
+		/src/rttov_readcoeffs_binary.F90
+
+	Downloaded (9/9/2010)
+		rtcoef_eos_2_airs_43lev_lblrtm.dat.bz2  		
+		rtcoef_metop_2_iasi_lblrtm.dat.bz2
+	  	rtcoef_mtsat_1_imager_pw.dat.bz2 
+	 	rtcoef_mtsat_2_imager_pw.dat.bz2  
+		ss_rttov9_ssmis.tar.bz2
+    
+	     Manually Moved/Replaced 
+		rttov93/rtcoef_rttov9/rtcoef_dmsp_16_ssmis.dat
+	  	rttov93/rtcoef_rttov9/rtcoef_dmsp_17_ssmis.dat
+		rttov93/rtcoef_rttov9/rtcoef_dmsp_18_ssmis.dat
+		rttov93/rtcoef_rttov9/rtcoef_metop_2_iasi_lblrtm.dat
+		rttov93/rtcoef_rttov9/rtcoef_eos_2_airs_43lev_lblrtm.dat
+
+		rttov93/rtcoef_rttov9/rtcoef_mtsat_1_imager_pw.dat
+		rttov93/rtcoef_rttov9/rtcoef_mtsat_2_imager_pw.dat
+
+		and
+
+		rttov93/rtcoef_rttov7/rtcoef_mtsat_1_imager_pw.dat
+		rttov93/rtcoef_rttov7/rtcoef_mtsat_2_imager_pw.dat
+
+
+	$  cp /usr/local/src/rttov93/build/arch/ifort /usr/local/src/rttov93/build/arch/ifort-local
+	$  vim /usr/local/src/rttov93/build/arch/ifort-local
+		rttov93/build/arch/ifort
+
+	FC=ifort
+	FC77=ifort
+	LDFLAGS_ARCH=
+	FFLAGS_ARCH=-cm -w95 -arch x86_64 -m64 -fPIC
+	AR=ar r
+
+	Compile
+
+	    $ cd /usr/local/src/rttov93/src/
+	    $  ../build/Makefile.PL
+	    $ make ARCH=ifort-local > make.log 2>&1 
+
+	Test
+            $ cd /usr/local/src/rttov93/scripts
+	    $  sh test_all.ksh
+	    > Test RTTOV9 successfully completed
+            $ cd /usr/local/src/rttov93/test
+	    $ ls -l *fwd*.diff
+	     Files should be zero size for some rounding differences are documented in the users guide.
+	     only non-zero size file
+	     > -rw-r--r-- 1 root 1280 728 Sep 13 14:36 tstrad_fwd_ssmis_01.diff
+
+Back to COSP
+
+$ cd /usr/local/src/COSP/
+$  vim /usr/local/src/COSP/cosp_defs.h
+   Uncomment the following line in /usr/local/src/COSP/cosp_defs.h:
+   !#define RTTOV rttov
+$  make rttov > make_rttov.log 2>&1
+
+Good until
+
+ifort -arch x86_64 -m64 -fPIC cosp_test.F90 cosp_radar.o cosp_types.o cosp_constants.o cosp_simulator.o cosp_utils.o scops.o prec_scops.o cosp.o cosp_stats.o pf_to_mr.o cosp_lidar.o radar_simulator_types.o zeff.o array_lib.o atmos_lib.o dsd.o format_input.o gases.o load_hydrometeor_classes.o math_lib.o mrgrnk.o optics_lib.o radar_simulator.o lidar_simulator.o cosp_io.o llnl_stats.o lmd_ipsl_stats.o cosp_isccp_simulator.o icarus.o cosp_misr_simulator.o MISR_simulator.o cosp_modis_simulator.o modis_simulator.o cosp_rttov_simulator.o cosp_rttov.o \
+        -I/usr/local/netcdf4/include -L/usr/local/netcdf4/lib -lnetcdff -lnetcdf  \
+        -I/usr/local/szip/include -L/usr/local/szip/lib -lsz \
+        -I/usr/local/include -L/usr/local/lib -lcmor \
+        -I/usr/local/include -L/usr/local/lib -luuid \
+        -L/usr/local/lib -ludunits2 -lexpat \
+        -L/usr/local/src/rttov93/lib -lrttov9.3 \
+        -o cosp_test
+Undefined symbols:
+  "_H5DSset_scale", referenced from:
+      _var_create_dataset in libnetcdf.a(nc4hdf.o)
+      _write_dim in libnetcdf.a(nc4hdf.o)
+É
+
+Note that 
+
+Try to modify the Makefile after looking at Makefile.cmor1
+
+.SUFFIXES : .F .f .c .o .a .f90 .f95 .F90
+########################################################################
+#              Adapt these variables to your environment
+########################################################################
+F90      = ifort
+F90FLAGS = -arch x86_64 -m64 -fPIC
+# -------- Third Party Libraries -----------
+NCDF_INC = /usr/local/netcdf4/include
+NCDF_LIB = /usr/local/netcdf4/lib
+UDUNITS_LIB = /usr/local/lib
+UUID_INC = /usr/local/include
+UUID_LIB = /usr/local/lib
+CMOR_INC = /usr/local/include
+CMOR_LIB = /usr/local/lib
+HDF5_INC = /usr/local/hdf5/include
+HDF5_LIB = /usr/local/hdf5/lib
+SZIP_INC = /usr/local/szip/include
+SZIP_LIB = /usr/local/szip/lib
+INC = /usr/local/include
+LIB = /usr/local/lib
+# Help the linker
+LD_LIBRARY_PATH=/usr/local/lib:/usr/local/hdf5/:/usr/local/netcdf4:/usr/local/szip/lib
+# ---------------- RTTOV ---------------------
+RTTOV_PATH     = /usr/local/src/rttov93
+RTTOV_LIB_PATH = $(RTTOV_PATH)/lib
+RTTOV_INC_PATH = $(RTTOV_PATH)/include
+RTTOV_MOD_PATH = $(RTTOV_PATH)/mod
+# --------- Non-optional simulators ----------
+RS_PATH = quickbeam
+CS_PATH = actsim
+LLNL_PATH = llnl
+ISCCP_PATH = icarus-scops-4.1-bsd
+MISR_PATH = MISR_simulator
+MODIS_PATH = MODIS_simulator
+########################################################################
+#              End of modifications
+########################################################################
+
+PROG =  cosp_test
+OBJS =  cosp_radar.o cosp_types.o cosp_constants.o cosp_simulator.o \
+        cosp_utils.o scops.o prec_scops.o cosp.o cosp_stats.o \
+        pf_to_mr.o \
+        cosp_lidar.o radar_simulator_types.o zeff.o \
+        array_lib.o atmos_lib.o dsd.o format_input.o \
+        gases.o load_hydrometeor_classes.o \
+        math_lib.o mrgrnk.o optics_lib.o radar_simulator.o \
+        lidar_simulator.o cosp_io.o llnl_stats.o lmd_ipsl_stats.o \
+        cosp_isccp_simulator.o icarus.o \
+        cosp_misr_simulator.o MISR_simulator.o \
+        cosp_modis_simulator.o modis_simulator.o \
+        cosp_rttov_simulator.o
+
+all: $(PROG)
+
+
+$(PROG): $(OBJS)
+	$(F90) $(F90FLAGS) $(PROG).F90 $(OBJS) \
+	-I$(NCDF_INC) -L${NCDF_LIB} -lnetcdff -lnetcdf \
+	-I$(HDF5_INC) -L${HDF5_LIB} -lhdf5_hl -lhdf5 \
+	-I$(INC) -L${LIB} -lm -lz \
+	-I$(SZIP_INC) -L${SZIP_LIB} -lsz -lcurl \
+	-I$(CMOR_INC) -L${CMOR_LIB} -lcmor \
+	-I$(UUID_INC) -L${UUID_LIB} -luuid \
+	-L${UDUNITS_LIB} -ludunits2 -lexpat -o $(PROG)
+
+cmor1: $(OBJS)
+	$(F90) $(F90FLAGS) $(PROG).F90 $(OBJS) -I$(CMOR_INC) -L${CMOR_LIB} -lcmor \
+	-I$(NCDF_INC) -L${NCDF_LIB} -lnetcdf -o $(PROG)
+ 
+rttov: $(OBJS) cosp_rttov.o
+	$(F90) $(F90FLAGS) $(PROG).F90 $(OBJS) cosp_rttov.o \
+	-I$(NCDF_INC) -L${NCDF_LIB} -lnetcdff -lnetcdf  \
+	-I$(HDF5_INC) -L${HDF5_LIB} -lhdf5_hl -lhdf5 \
+	-I$(SZIP_INC) -L${SZIP_LIB} -lsz -lcurl \
+	-I$(INC) -L${LIB} -lm -lz \
+	-I$(CMOR_INC) -L${CMOR_LIB} -lcmor \
+	-I$(UUID_INC) -L${UUID_LIB} -luuid \
+	-L${UDUNITS_LIB} -ludunits2 -lexpat \
+	-L${RTTOV_LIB_PATH} -lrttov9.3 \
+	-o $(PROG)
+        
+%.o: %.f90
+	@echo $(F90) $(F90FLAGS) -c -I$(NCDF_INC) -I$(CMOR_INC) $<
+	$(F90) $(F90FLAGS) -c -I$(NCDF_INC) -I$(CMOR_INC) $<
+	@echo "-----------------------------"
+
+%.o: %.F90
+	@echo $(F90) $(F90FLAGS) -c -I$(NCDF_INC) -I$(CMOR_INC) $<
+	$(F90) $(F90FLAGS) -c -I$(NCDF_INC) -I$(CMOR_INC) $<
+	@echo "-----------------------------"
+
+$(PROG).o     : cosp_constants.o cosp_types.o cosp.o cosp_io.o
+cosp_io.o       : cosp_constants.o cosp_types.o cosp_modis_simulator.o
+cosp.o          : cosp_simulator.o cosp_types.o cosp_modis_simulator.o
+cosp_lidar.o    : cosp_constants.o cosp_types.o
+cosp_radar.o    : cosp_constants.o cosp_types.o radar_simulator_types.o \
+	              array_lib.o atmos_lib.o format_input.o math_lib.o optics_lib.o
+cosp_simulator.o: cosp_types.o cosp_radar.o cosp_lidar.o \
+                  cosp_isccp_simulator.o cosp_misr_simulator.o \
+                  cosp_modis_simulator.o cosp_rttov_simulator.o cosp_stats.o
+cosp_stats.o    : cosp_constants.o cosp_types.o llnl_stats.o lmd_ipsl_stats.o
+cosp_types.o    : cosp_constants.o cosp_utils.o radar_simulator_types.o
+cosp_utils.o    : cosp_constants.o
+lmd_ipsl_stats.o : llnl_stats.o
+array_lib.o    : mrgrnk.o
+dsd.o          : array_lib.o math_lib.o
+format_input.o : array_lib.o
+load_hydrometeor_classes.o: radar_simulator_types.o
+math_lib.o                : array_lib.o mrgrnk.o
+radar_simulator.o         : array_lib.o math_lib.o mrgrnk.o optics_lib.o \
+	                        radar_simulator_types.o
+zeff.o                    : math_lib.o optics_lib.o
+cosp_isccp_simulator.o    : cosp_constants.o cosp_types.o
+cosp_misr_simulator.o     : cosp_constants.o cosp_types.o
+cosp_modis_simulator.o    : cosp_constants.o cosp_types.o modis_simulator.o
+cosp_rttov_simulator.o    : cosp_constants.o cosp_types.o cosp_rttov.o
+
+clean_objs:
+	rm -f $(OBJS) *.mod *.o
+
+clean:
+	rm -f $(PROG) $(OBJS) *.mod *.o fort.*
+
+scops.o : $(ISCCP_PATH)/scops.f
+	$(F90) $(F90FLAGS) -c -I$(ISCCP_PATH) $<
+
+icarus.o : $(ISCCP_PATH)/icarus.f
+	$(F90) $(F90FLAGS) -c $<
+
+prec_scops.o : $(LLNL_PATH)/prec_scops.f
+	$(F90) $(F90FLAGS) -c $<
+
+pf_to_mr.o : $(LLNL_PATH)/pf_to_mr.f
+	$(F90) $(F90FLAGS) -c $<
+
+radar_simulator_types.o : $(RS_PATH)/radar_simulator_types.f90
+	$(F90) $(F90FLAGS) -c $<
+
+atmos_lib.o : $(RS_PATH)/atmos_lib.f90
+	$(F90) $(F90FLAGS) -c $<
+
+zeff.o : $(RS_PATH)/zeff.f90
+	$(F90) $(F90FLAGS) -c $<
+
+array_lib.o : $(RS_PATH)/array_lib.f90
+	$(F90) $(F90FLAGS) -c $<
+
+dsd.o : $(RS_PATH)/dsd.f90
+	$(F90) $(F90FLAGS) -c $<
+
+format_input.o : $(RS_PATH)/format_input.f90
+	$(F90) $(F90FLAGS) -c $<
+
+gases.o : $(RS_PATH)/gases.f90
+	$(F90) $(F90FLAGS) -c $<
+
+load_hydrometeor_classes.o : $(RS_PATH)/load_hydrometeor_classes.f90
+	$(F90) $(F90FLAGS) -c $<
+
+math_lib.o : $(RS_PATH)/math_lib.f90
+	$(F90) $(F90FLAGS) -c $<
+
+mrgrnk.o : $(RS_PATH)/mrgrnk.f90
+	$(F90) $(F90FLAGS) -c $<
+
+optics_lib.o : $(RS_PATH)/optics_lib.f90
+	$(F90) $(F90FLAGS) -c $<
+
+radar_simulator.o : $(RS_PATH)/radar_simulator.f90
+	$(F90) $(F90FLAGS) -c $<
+
+lidar_simulator.o : $(CS_PATH)/lidar_simulator.F90
+	$(F90) $(F90FLAGS) -c $<
+
+lmd_ipsl_stats.o : $(CS_PATH)/lmd_ipsl_stats.F90
+	$(F90) $(F90FLAGS) -c $<
+
+llnl_stats.o : $(LLNL_PATH)/llnl_stats.F90
+	$(F90) $(F90FLAGS) -c $<
+
+cosp_radar.o : $(LLNL_PATH)/cosp_radar.F90
+	$(F90) $(F90FLAGS) -c $<
+
+MISR_simulator.o : $(MISR_PATH)/MISR_simulator.f
+	$(F90) $(F90FLAGS) -c $<
+
+modis_simulator.o : $(MODIS_PATH)/modis_simulator.F90 
+	$(F90) $(F90FLAGS) -c $<
+
+cosp_rttov.o : cosp_rttov.F90 
+	$(F90) $(F90FLAGS) -c -I $(RTTOV_INC_PATH) -I $(RTTOV_MOD_PATH) $<
+
+$ make clean
+$ make rttov > make_rttov1.log 2>&1
+
+This seems to work!
+
+$ ln -s /usr/local/src/rttov93/rtcoef_rttov9/*[.dat] .
+
+The logical Lrttov_sim, in cosp_output_nl.txt switches on/off RTTOV within COSP. 
+Ltbrttov switches on/off the RTTOV outputs, i.e. the brighness temperatures. 
+The COSP input arguments that control which instrument and channels you want to 
+simulate are found in cosp_input_nl.txt, below the lines
+  !----------------------------------------------------------------------------------
+  !-------------- RTTOV inputs
+  !----------------------------------------------------------------------------------
+The possible values for the arguments Platform, Satellite, Instrument, Nchannels, Channels can
+be found in the RTTOV documentation.
+
+NOTE: the current implementation of RTTOV in COSP only computes clear-sky brightness temperatures. All sky support will be
+added in the future.
+
+Next Compile COSP w/RTTOV
+
+$ vim /usr/local/src/COSP/cosp_defs.h
+  Comment the following line in /usr/local/src/COSP/cosp_defs.h:
+  !#define RTTOV rttov
+
+$ make clean
+$ make > make.log 2>&1
+$ more make.log 
+
+Seems to work too.
+
+### Testing
+
+$ vim cosp_test.sh
+Change top line to
+#/bin/sh
+
+    Oops, need to install nccmp
+
+	# for nccmp 1.1.0
+	-------------------------------------------------------------
+	http://nccmp.sourceforge.net/
+
+   	$ cd /usr/local/src
+	$ mv ~/Downloads/nccmp-1.1.0.tgz .
+	$ tar -zxvf nccmp-1.1.0.tgz
+	$ cd nccmp-1.1.0/src
+	$ vim README
+
+	For some reason need to do this to get it to work as missing
+	$ cp /usr/local/src/netcdf-4.1.1/libsrc4/error.h /usr/local/src/nccmp-1.1.0/src/ncinfo/include/error.h
+	
+	Also need to cut out this lines as they aren't needed
+	$ vim /usr/local/src/nccmp-1.1.0/src/src/getopt.c
+	
+	int
+	getopt_long (argc, argv, options, long_options, opt_index)
+	     int argc;
+	     char *const *argv;
+	     const char *options;
+	     const struct option *long_options;
+	     int *opt_index;
+	{
+	  return _getopt_internal (argc, argv, options, long_options, opt_index, 0);
+	}
+
+	/* Like getopt_long, but '-' as well as '--' can indicate a long option.
+	   If an option that starts with '-' (not '--') doesn't match a long option,
+	   but does match a short option, it is parsed as a short option
+	   instead.  */
+
+	int
+	getopt_long_only (argc, argv, options, long_options, opt_index)
+	     int argc;
+	     char *const *argv;
+	     const char *options;
+	     const struct option *long_options;
+	     int *opt_index;
+	{
+	  return _getopt_internal (argc, argv, options, long_options, opt_index, 1);
+	}
+
+	$ ./configure -help
+	$ export LDFLAGS="-arch x86_64 -L/usr/local/netcdf4/lib -lnetcdf -L/usr/local/hdf5/lib -lhdf5_hl -lhdf5 -L/usr/local/lib -lz -lm -L/usr/local/szip/lib -lsz -lcurl"
+	$ export LIBS="-L/usr/local/netcdf4/lib -lnetcdf -L/usr/local/hdf5/lib -lhdf5_hl -lhdf5 -L/usr/local/lib -lz -lm -L/usr/local/szip/lib -lsz -lcurl"
+	$ export CPPFLAGS="-I/usr/local/netcdf4/include -I/usr/local/hdf5/include"
+	$ ./configure --prefix=/usr/local	
+
+	Scan Makefile
+	$ more Makefile
+	$ make > make.log 2>&1
+
+	Need to edit the this to give it the correct path
+	
+	$ vim /usr/local/src/nccmp-1.1.0/src/ncinfo/
+	
+	change 
+		ncgen=/usr/local/bin/ncgen
+	to
+		ncgen=/usr/local/netcdf4/bin/ncgen
+
+	$ make check > make_check.log 2>&1
+    > more  make_check.log
+    Making check in src
+    make[1]: Nothing to be done for `check'.
+    Making check in test
+    make  padheader test_strlist
+    gcc -DHAVE_CONFIG_H -I. -I..   -I/usr/local/netcdf4/include -I/usr/local/hdf5/include  -arch x86_64  -fPIC -MT padheader.o -MD -MP -MF .deps/padheader.Tpo -c -o padheader.o padheader.c
+    mv -f .deps/padheader.Tpo .deps/padheader.Po
+    gcc  -arch x86_64  -fPIC  -arch x86_64 -L/usr/local/netcdf4/lib -lnetcdf -L/usr/local/hdf5/lib -lhdf5_hl -lhdf5 -L/usr/local/lib -lz -lm -L/usr/local/szip/lib -lsz -lcurl -o padheader padheader.o -lnetcdf -lnetcdf -lm -L/usr/local/netcdf4/lib -lnetcdf -L/usr/local/hdf5/lib -lhdf5_hl -lhdf5 -L/usr/local/lib -lz -lm -L/usr/local/szip/lib -lsz -lcurl
+    gcc -DHAVE_CONFIG_H -I. -I..  -I../src -I/usr/local/netcdf4/include -I/usr/local/hdf5/include  -arch x86_64  -fPIC -MT test_strlist-test_strlist.o -MD -MP -MF .deps/test_strlist-test_strlist.Tpo -c -o test_strlist-test_strlist.o `test -f 'test_strlist.c' || echo './'`test_strlist.c
+    mv -f .deps/test_strlist-test_strlist.Tpo .deps/test_strlist-test_strlist.Po
+    gcc  -arch x86_64  -fPIC  -arch x86_64 -L/usr/local/netcdf4/lib -lnetcdf -L/usr/local/hdf5/lib -lhdf5_hl -lhdf5 -L/usr/local/lib -lz -lm -L/usr/local/szip/lib -lsz -lcurl -o test_strlist test_strlist-test_strlist.o ../src/nccmp-xmalloc.o ../src/nccmp-strlist.o -lnetcdf -lm -L/usr/local/netcdf4/lib -lnetcdf -L/usr/local/hdf5/lib -lhdf5_hl -lhdf5 -L/usr/local/lib -lz -lm -L/usr/local/szip/lib -lsz -lcurl
+    make  check-TESTS
+    1.
+    2.
+    3.
+    4.
+    5.
+    6.
+    7.
+    8.
+    9.
+    10.
+    11.
+    12.
+    13.
+    14.
+    15.
+    16.
+    17.
+    18.
+    19.
+    20.
+    21.
+    PASS: nccmp_test.sh
+    =============
+    1 test passed
+    =============
+    Making check in ncinfo
+    make  check-TESTS
+    + ncgen=/usr/local/netcdf4/bin/ncgen
+    + /usr/local/netcdf4/bin/ncgen -o test1.nc test1.ncgen
+    + /usr/local/netcdf4/bin/ncgen -k 2 -o test2.nc test2.ncgen
+    + /usr/local/netcdf4/bin/ncgen -k 3 -o test3.nc test2.ncgen
+    + /usr/local/netcdf4/bin/ncgen -k 4 -o test4.nc test2.ncgen
+    + rm -f tmp.stdout
+    + touch tmp.stdout
+    + echo test1.nc
+    + ./ncinfo test1.nc
+    + echo '\ntest2.nc'
+    + ./ncinfo test2.nc
+    + echo '\ntest3.nc'
+    + ./ncinfo test3.nc
+    + echo '\ntest4.nc'
+    + ./ncinfo test4.nc
+    + cmp tmp.stdout test.stdout
+    tmp.stdout test.stdout differ: char 47, line 3
+    + test 1 = 0
+    + echo
+
+    + echo 'Test failed: cmp tmp.stdout test.stdout'
+    Test failed: cmp tmp.stdout test.stdout
+    + exit 1
+    FAIL: test.sh
+    ==============================================
+    1 of 1 test failed
+    Please report to =Remik.Ziemlinski_at_noaa.gov
+    ==============================================
+    make[2]: *** [check-TESTS] Error 1
+    make[1]: *** [check-am] Error 2
+    make: *** [check-recursive] Error 1
+
+    So I emailed Remik Ziemlinski  and got the following advice:
+    ... It's perfectly acceptable to edit nccmp-1.1.0/src/Makefile and remove "ncinfo" from the line:
+        SUBDIRS = src test *ncinfo*
+    
+    $ vim /usr/local/src/nccmp-1.1.0/src/Makefile
+    $ make clean
+    $ make > make_fixed.log 2>&1
+	$ make check > make_check_new.log 2>&1
+    > more  make_check_new.log
+    PASS: nccmp_test.sh
+    =============
+    1 test passed
+    =============
+
+    $ make install
+
+Okay, back to testing cosp
+$ cd /usr/local/src/COSP
+
+1) Setting up the namelists
+
+The input parameters for cosp_test are provided through the namelist COSP_INPUT,
+which can be found in the file cosp_input_nl.txt. You can run two tests by changing
+the input file:
+
+ FINPUT='cosp_input_um.nc', ! NetCDF file with 1D inputs
+ or
+ FINPUT='cosp_input_um_2d.nc', ! NetCDF file with 2D inputs
+
+You will also need to modify the CMOR namelist
+in ~/cosp/cosp.vN.N/cmor/cosp_cmor_nl.txt. Specifically, you will need to use
+   
+   TABLE = 'CMIP5_cf3hr' for 'cosp_input_um.nc'
+   TABLE = 'COSP_table_2D' for 'cosp_input_um_2d.nc'
+   
+COSP_table_2D contains the definitions of the variables in a lon/lat grid.
+
+Try 1d inputs 1st
+$ vim cosp_input_nl.txt
+
+Uncomment
+FINPUT='cosp_input_um.nc', ! NetCDF file with 1D inputs
+Comment
+!FINPUT='cosp_input_um_2d.nc', ! cosp_input_um_2d.nc NetCDF file with 2D inputs
+
+$ vim cmor/cosp_cmor_nl.txt
+
+Alter line with TABLE= to
+  TABLE = 'CMIP5_cf3hr',
+
+$ ./cosp_test
+>  Processing file: 
+ cosp_input_um.nc                                                               
+                                                                                                                                                                              
+ Reading year ...
+ Reading month ...
+ Reading day ...
+ Reading hour ...
+ Reading minute ...
+ Reading second ...
+ Reading t ...
+ Reading tUM ...
+ Reading lst ...
+ Reading lon ...
+ Reading lat ...
+ Reading landmask ...
+ Reading orography ...
+ Reading psfc ...
+ Reading height ...
+ Reading height_half ...
+ Reading T_abs ...
+ Reading qv ...
+ Reading rh ...
+ Reading pfull ...
+ Reading phalf ...
+ Reading mr_lsliq ...
+ Reading mr_lsice ...
+ Reading mr_ccliq ...
+ Reading mr_ccice ...
+ Reading fl_lsrain ...
+ Reading fl_lssnow ...
+ Reading fl_lsgrpl ...
+ Reading fl_ccrain ...
+ Reading fl_ccsnow ...
+ Reading tca ...
+ Reading cca ...
+ Reading Reff ...
+ Reading dtau_s ...
+ Reading dtau_c ...
+ Reading dem_s ...
+ Reading dem_c ...
+ Reading skt ...
+ Reading sunlit ...
+ Reading u_wind ...
+ Reading v_wind ...
+ Reading mr_ozone ...
+ Reading emsfc_lw ...
+ Allocating memory for gridbox type...
+ Populating input structure...
+ Defining new vertical grid...
+ Allocating memory for other types...
+ Calling simulator...
+ ---------ix:            1         100
+ ---------ix:          101         153
+ Writing outputs...
+Definition of "kt" in "/usr/local/share/udunits/udunits2-common.xml", line 90, overrides prefixed-unit "1000000 kilogram"
+Definition of "microns" in "/usr/local/share/udunits/udunits2-common.xml", line 308, overrides prefixed-unit "1e-15 second"
+Definition of "ft" in "/usr/local/share/udunits/udunits2-common.xml", line 405, overrides prefixed-unit "1e-12 kilogram"
+Definition of "yd" in "/usr/local/share/udunits/udunits2-common.xml", line 413, overrides prefixed-unit "8.64e-20 second"
+Definition of "pt" in "/usr/local/share/udunits/udunits2-common.xml", line 634, overrides prefixed-unit "1e-09 kilogram"
+Definition of "at" in "/usr/local/share/udunits/udunits2-common.xml", line 1031, overrides prefixed-unit "1e-15 kilogram"
+Definition of "ph" in "/usr/local/share/udunits/udunits2-common.xml", line 1549, overrides prefixed-unit "3.6e-09 second"
+Definition of "nt" in "/usr/local/share/udunits/udunits2-common.xml", line 1556, overrides prefixed-unit "1e-06 kilogram"
+ ---------------Define dataset
+ ---------------Define axis
+ ---------------Fill in
+ ---------------Find list
+ ---------------Define variables
+
+C Traceback:
+In function: cmor_variable
+
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!                                                                     !
+! Error: Could not find a matching variable for name: 'cltlidarradar' !
+!                                                                     !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Hmmm. Have to ask about this.
+
+Okay try 2d inputs
+
+$ vim cosp_input_nl.txt
+
+Comment
+!FINPUT='cosp_input_um.nc', ! NetCDF file with 1D inputs
+UnComment
+FINPUT='cosp_input_um_2d.nc', ! cosp_input_um_2d.nc NetCDF file with 2D inputs
+
+$ vim cmor/cosp_cmor_nl.txt
+
+Alter line with TABLE= to
+  TABLE = 'COSP_table_2D',
+
+$ ./cosp_test
+>  Processing file: 
+ cosp_input_um_2d.nc                                                            
+                                      
+ Reading lon ...
+ Reading lat ...
+ Reading lon_bnds ...
+ Reading lat_bnds ...
+ Reading height ...
+ Reading pfull ...
+ Reading phalf ...
+ Reading T_abs ...
+ Reading qv ...
+ Reading rh ...
+ Reading tca ...
+ Reading cca ...
+ Reading mr_lsliq ...
+ Reading mr_lsice ...
+ Reading mr_ccliq ...
+ Reading mr_ccice ...
+ Reading fl_lsrain ...
+ Reading fl_lssnow ...
+ Reading fl_lsgrpl ...
+ Reading fl_ccrain ...
+ Reading fl_ccsnow ...
+ Reading orography ...
+ Reading landmask ...
+ Reading height_half ...
+ Reading psfc ...
+ Reading Reff ...
+ Reading dtau_s ...
+ Reading dtau_c ...
+ Reading dem_s ...
+ Reading dem_c ...
+ Reading skt ...
+ Reading sunlit ...
+ Reading emsfc_lw ...
+ Reading mr_ozone ...
+ Reading u_wind ...
+ Reading v_wind ...
+ Allocating memory for gridbox type...
+ Populating input structure...
+ Defining new vertical grid...
+ Allocating memory for other types...
+ Calling simulator...
+ ----- WARNING: COSP_CHECK_INPUT_2D: minimum value of snow_ls set to: 
+  0.0000000E+00
+ ---------ix:            1         100
+ ---------ix:          101         153
+ Writing outputs...
+Definition of "kt" in "/usr/local/share/udunits/udunits2-common.xml", line 90, overrides prefixed-unit "1000000 kilogram"
+Definition of "microns" in "/usr/local/share/udunits/udunits2-common.xml", line 308, overrides prefixed-unit "1e-15 second"
+Definition of "ft" in "/usr/local/share/udunits/udunits2-common.xml", line 405, overrides prefixed-unit "1e-12 kilogram"
+Definition of "yd" in "/usr/local/share/udunits/udunits2-common.xml", line 413, overrides prefixed-unit "8.64e-20 second"
+Definition of "pt" in "/usr/local/share/udunits/udunits2-common.xml", line 634, overrides prefixed-unit "1e-09 kilogram"
+Definition of "at" in "/usr/local/share/udunits/udunits2-common.xml", line 1031, overrides prefixed-unit "1e-15 kilogram"
+Definition of "ph" in "/usr/local/share/udunits/udunits2-common.xml", line 1549, overrides prefixed-unit "3.6e-09 second"
+Definition of "nt" in "/usr/local/share/udunits/udunits2-common.xml", line 1556, overrides prefixed-unit "1e-06 kilogram"
+------
+CMOR is now closed.
+------
+
+We encountered no warnings or errors during execution
+------
+Congratulations!
+------
+ Deallocating memory...
+   1.100100 
+
+Good 2d seemed to work. Now test against provided data.
+
+$ ./cosp_test.sh 2D 1 ./outputs_test.slev ./outputs
+
+Okay says "No such file" because of mis-matches:
+    ./outputs_test.slev/albisccp_2D_HadGEM2-ES_amip_r1i1p1_20080102000000-20080102000000.nc
+    ./outputs/albisccp_2D_HadGEM2-ES_amip_r1i1p1_20080102000000-20080102000000.nc
+but in fact ./outputs files are like this
+    ./outputs/albisccp_2D_HadGEM2-ES_amip_r0i0p0_20080102000000-20080102000000.nc
+Note the _r1i1p1_ versus _r0i0p0_
+
+Not sure about the nature of that difference (more questions).
+
+For fun I made a copy of the ./output files exchanging _r1i1p1_ for _r0i0p0_
+
+$ ./cosp_test.sh 2D 1 ./outputs_test.slev ./outputs > cosp_test.log 2>&1
+$ more cosp_test.log
+> ------------------------- Comparing  albisccp_2D_HadGEM2-ES_amip_r1i1p1_20080102000000-20080102000000.nc ...
+DIFFER : VARIABLE : albisccp : POSITION : 0 0 13 : VALUES : 0.239806 <> 0.239806
+DIFFER : VARIABLE : albisccp : POSITION : 0 1 10 : VALUES : 0.422034 <> 0.422034
+
+and more lots of differences but all of the  0.239806 <> 0.239806 nature which I'm not sure are
+significant. 
+
+As advised in README.txt: "Sometimes these differences are caused by small differences in floating-point arithmetics when using different compilers, and are usually negligible. Therefore, if you find differences it is advised to run cosp_test.sh again, now with arg2=2, to see if those differences are significant. cosp_test.sh will show the differences that are greater than the fourth signifcant digit. You can adapt this by changing the variable PRECISION within cosp_test.sh."
+
+Of course that means installing NCO... oh boy, not sure about that bag of hurt...
+
+I'll stop here for now.
+
+# NCO 4.0.3
+-------------------------------------------------------------
+
+http://www.unidata.ucar.edu/software/netcdf
+
+Notes:
+Mac OS X build hints: Mac OS X users report success building NCO without patches so long as they (1) Install the latest version of bison, (2) Disable shared libraries and (3) Disable extended regular expressions. This is done with ./configure --disable-regex --disable-shared Building NCO with shared libraries on Mac OS X on may be possible. To try, first re-build and re-install the netCDF library using CFLAGS=-fno-common. Apparently netCDF, unlike most codes, does not set this automatically. Then build NCO normally. Mac OS X ships with a broken version of the POSIX cut utility which causes many NCO regression tests to appear to fail. In fact the NCO commands succeed, but the cut output fails. The workaround is not to heed the regression tests, or to install a working cut, e.g., from the GNU coreutils package.
+
+Best Practices: The recommended first steps to build (i.e., compile, for the most part) NCO from source code are to install ANTLR 2.7.x (required for ncap2), GSL (desirable for ncap2), netCDF (absolutely required), OPeNDAP (enables network transparency), and UDUnits (allows dimensional unit transformations) before building NCO.
+
+In my case I have a new version of bison, antler, gsl installed via macports in /opt/local/bin/bison
+
+need to install port installed libdap
+
+$ cd /usr/local/src
+$ mv ~/Downloads/nco-4.0.3.tar.gz  .
+$ tar -zxvf nco-4.0.3.tar.gz 
+$ cd netcdf-4.1.1
+$ vim INSTALL
