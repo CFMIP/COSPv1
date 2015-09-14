@@ -1,5 +1,5 @@
-! $Revision: 23 $, $Date: 2011-03-31 07:41:37 -0600 (Thu, 31 Mar 2011) $
-! $URL: http://cfmip-obs-sim.googlecode.com/svn/stable/v1.3.2/predict_mom07.F90 $
+! $Revision: 88 $, $Date: 2013-11-13 07:08:38 -0700 (Wed, 13 Nov 2013) $
+! $URL: http://cfmip-obs-sim.googlecode.com/svn/stable/v1.4.0/predict_mom07.F90 $
         subroutine predict_mom07(m2,tc,n,m)
         
         ! subroutine to predict nth moment m given m2, tc, n
@@ -7,7 +7,7 @@
             implicit none
         
             real*8 :: a1,a2,a3,b1,b2,b3,c1,c2,c3
-            real*8 :: m2,tc,n,m,a_,b_,c_,A,B,C
+            real*8 :: m2,tc,n,m,a_,b_,c_,A,B,C,n2
         
             a1=      13.6078
             a2=     -7.76062
@@ -19,10 +19,10 @@
             c2=   0.00581022
             c3=    0.0456723
         
-        
-            a_=a1+a2*n+a3*n**2.0
-            b_=b1+b2*n+b3*n**2.0
-            c_=c1+c2*n+c3*n**2.0
+            n2=n*n
+            a_=a1+a2*n+a3*n2
+            b_=b1+b2*n+b3*n2
+            c_=c1+c2*n+c3*n2
         
             A=exp(a_)
             B=b_

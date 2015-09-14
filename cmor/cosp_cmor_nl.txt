@@ -39,10 +39,10 @@
   REALIZATION = 1,
   INITIALIZATION_METHOD = 1,
   PHYSICS_VERSION = 1,
-  CONTACT = 'alejandro.bodas@metoffice.gov.uk',
+  CONTACT = 'mail@mail.com',
   HISTORY = 'history',
   COMMENT = 'comment',
   REFERENCES = 'references',
-  TABLE = 'COSP_table_1D', ! COSP_table_1D,CMIP5_cf3hr,COSP_table_2D,CMIP5_cf3hr.cmor1,COSP_table_2D.cmor1
+  TABLE = 'COSP_table_2D', ! COSP_table_1D,CMIP5_cf3hr,COSP_table_2D,CMIP5_cf3hr.cmor1,COSP_table_2D.cmor1
   MAXTSTEPS = 1000
 /

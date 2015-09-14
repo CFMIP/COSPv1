@@ -1,7 +1,7 @@
 ! (c) British Crown Copyright 2008, the Met Office.
 ! All rights reserved.
 ! $Revision: 23 $, $Date: 2011-03-31 07:41:37 -0600 (Thu, 31 Mar 2011) $
-! $URL: http://cfmip-obs-sim.googlecode.com/svn/stable/v1.3.2/cosp_misr_simulator.F90 $
+! $URL: http://cfmip-obs-sim.googlecode.com/svn/stable/v1.4.0/cosp_misr_simulator.F90 $
 ! 
 ! Redistribution and use in source and binary forms, with or without modification, are permitted 
 ! provided that the following conditions are met:

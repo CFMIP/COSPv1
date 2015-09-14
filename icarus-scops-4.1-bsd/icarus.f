@@ -1,5 +1,5 @@
-! $Revision: 23 $, $Date: 2011-03-31 07:41:37 -0600 (Thu, 31 Mar 2011) $
-! $URL: http://cfmip-obs-sim.googlecode.com/svn/stable/v1.3.2/icarus-scops-4.1-bsd/icarus.f $
+! $Revision: 88 $, $Date: 2013-11-13 07:08:38 -0700 (Wed, 13 Nov 2013) $
+! $URL: http://cfmip-obs-sim.googlecode.com/svn/stable/v1.4.0/icarus-scops-4.1-bsd/icarus.f $
       SUBROUTINE ICARUS(
      &     debug,
      &     debugcol,
@@ -451,7 +451,6 @@
               write (6,*) 'Input variable out of range'
               write (6,*) 'rangevec:'
               write (6,*) rangevec
-              call flush(6)
               STOP
         endif
       enddo

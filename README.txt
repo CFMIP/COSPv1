@@ -716,77 +716,33 @@ CloudTopPressure, retrievedSize and retrievedTau set
 6) Bug fix in cosp_stats.F90/COSP_CHANGE_VERTICAL_GRID. dz goes out of bounds in certain configurations.
    More details in message sent to the users group (2011/03/22).
 
+5.11 - Changes in v1.4
+--------------------------------------------------------------------------------------------
+1) Improvements in radar simulator:
+  - New attenuation integration scheme, possibility of using a look up table, partial support of two-moment microphysics.
+  - Several optimisations.
+  - Optimisations in gaseous absorption.
+  - Selection of microphysics via cosp_defs.h.
+2) Optimised version of cosp_change_vertical_grid in cosp_stats.
+
+3) New timing variables that estimate the performance of each simulator.
+
+4) New CALIPSO cloud phase diagnostics.
+  - A large list of new cloud diagnostics developed by Gregory Cesana (reference: Cesana G. and H. Chepfer (2013), J. Geophys. Res., doi: 10.1002/jgrd.50376.)
+5) Deleted support for CMOR1.
+6) Restructure of calls to CMOR functions. A new, improved append mode is used in the the off-line version (see changes in cosp_test.F90).
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 6.- ADDITIONAL NOTES
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-6.1 - Modification to the CMOR1.3 library
---------------------------------------------------------------------------------------------
-If you try to write more that one time slice by increasing the counter in the do loop in
-cosp_test, it will fail. This seems to have to do with a bug in CMOR1. If you want to append
-additional time slices, then you need to modify the function initialize_file in 
-cmor_users_functions.F90. You'll need to add the lines between the 'Start' and 'End' comments
-below. I've include the context so that it's easy to find where you need to make the
-modifications. Once you have made the modifications, you'll need to rebuild your CMOR1 library
-so that the changes take effect.
-          
-
-       !  check if a function of time; if so, determine times_written
-
-       IF (nf90_inq_dimid(ncid=var(ivar)%ncid, name='time', dimid=dimid) ==  &
-            NF90_NOERR) THEN
-          ierr = nf90_inquire_dimension(ncid=var(ivar)%ncid, dimid=dimid, &
-               len=ntimes)
-
-          IF (ierr /= NF90_NOERR) THEN
-             PRINT*, 'Error encountered in CMOR: initialize_file'
-             PRINT*, '   Problem reading length of time dimension from'
-             PRINT*, '   existing netCDF file: '
-             PRINT*, '   ', var(ivar)%full_outpath
-             STOP
-          END IF
-          !----------------- Start -------------------------
-          ! A.B-S: determine times_id
-          ierr = nf90_inq_varid(ncid=var(ivar)%ncid, name='time', varid=var(ivar)%nctimid)
-          IF (ierr /= NF90_NOERR) THEN
-             PRINT*, 'Error encountered in CMOR: initialize_file'
-             PRINT*, '   Problem reading time id from'
-             PRINT*, '   existing netCDF file: '
-             PRINT*, '   ', var(ivar)%full_outpath
-             STOP
-          END IF
-          ! A.B-S: determine time_bnds_id
-          ierr = nf90_inq_varid(ncid=var(ivar)%ncid, name='time_bnds', varid=var(ivar)%nctim_bndsid)
-          IF (ierr /= NF90_NOERR) THEN
-             PRINT*, 'Error encountered in CMOR: initialize_file'
-             PRINT*, '   Problem reading time_bnds id from'
-             PRINT*, '   existing netCDF file: '
-             PRINT*, '   ', var(ivar)%full_outpath
-             STOP
-          END IF
-          ! A.B-S: determine var()%varid
-          ierr = nf90_inq_varid(ncid=var(ivar)%ncid, name=trim(var(ivar)%table_entry), varid=var(ivar)%varid)
-          IF (ierr /= NF90_NOERR) THEN
-             PRINT*, 'Error encountered in CMOR: initialize_file'
-             PRINT*, '   Problem reading ', trim(var(ivar)%table_entry),' id from'
-             PRINT*, '   existing netCDF file: '
-             PRINT*, '   ', var(ivar)%full_outpath
-             STOP
-          END IF
-          !----------------- End -------------------------
-
-          var(ivar)%times_written = ntimes
-          IF (ASSOCIATED(var(ivar)%zfac_times_written))    &
-               var(ivar)%zfac_times_written = ntimes
-
-       END IF
-
-6.2 - Using the NAG f95 compiler
+6.1 - Using the NAG f95 compiler
 --------------------------------------------------------------------------------------------
 In addition to the changes described in item section 5.3(18) for v0.4, the NAG compiler does not support
 the FLUSH subroutine (it is not f95 standard). If you want to use this compiler, then you'll need 
 to comment out the call to this subroutine in icarus.f (ISCCP simulator).
 
-6.3 - Running COSP in Cloud Resolving Mode (Ncolumns=1)
+6.2 - Running COSP in Cloud Resolving Mode (Ncolumns=1)
 --------------------------------------------------------------------------------------------
 In addition what it is said in section 5.3.11, if you want to run COSP in CRM mode, you will 
 need to fill in gbx%mr_hydro with the appropriate precipitation mixing ratios in the driver
@@ -806,7 +762,7 @@ to
         gbx%mr_hydro(:,:,I_LSSNOW) = fl_lssnow
         gbx%mr_hydro(:,:,I_LSGRPL) = fl_lsgrpl
 
-6.4 - Configuration of COSP for CFMIP-2
+6.3 - Configuration of COSP for CFMIP-2
 --------------------------------------------------------------------------------------------
 The directory ./cfmip2 contains the namelists with the configuration for the CFMIP-2 experiments.
 These files are also available on the CFMIP web site.
@@ -819,7 +775,7 @@ b) Short time series (*short_offline.txt). This is the configuration for the 1 y
 for the curtain outputs and global gridded monthly means from curtain outputs.
 Outputs from CloudSat and CALIPSO/PARASOL are requested.
 
-6.5 - Using your own cloud generator/subgrid variability in hydrometeor water contents
+6.4 - Using your own cloud generator/subgrid variability in hydrometeor water contents
 --------------------------------------------------------------------------------------------
 If your model requires different overlapping assumptions or the water contents, particle sizes, optical thickness and emissivities, are not horizontally homogeneous, then you will have to make modifications to the code. Below is a list 
 of things that Jason Cole did to make it work in his model. Below I attach an the e-mail where he explains the steps 
@@ -918,7 +874,7 @@ New:
 
 The file icarus_modified.f shows the changes needed in icarus.f.
 
-6.6 - Incorporating RTTOV in COSP
+6.5 - Incorporating RTTOV in COSP
 --------------------------------------------------------------------------------------------
 RTTOV is a fast radiative transfer code that provides radiances (and optionally the jacobians) for many infrared and passive microwave sensors. As it is not distributed under an open software license, it is not distributed as part of COSP, althoug it  can be included as an option.
 Version 9_1 of RTTOV was released in March 2008 and is available to licensed users free of charge. To become
@@ -976,23 +932,7 @@ be found in the RTTOV documentation.
 NOTE: the current implementation of RTTOV in COSP only computes clear-sky brightness temperatures. All sky support will be
 added in the future.
 
-
-6.7 - Running COSP with CMOR1
---------------------------------------------------------------------------------------------
-For those who do not plan to submit COSP outputs to the CMIP archive, there is the possibility of running COSP
-with the old version of CMOR, v1.3. In order to do that, you will have to:
-1) Uncomment the following line in cosp_defs.h:
-#define USE_CMOR1 use_cmor1
-
-2) Run 'make cmor1'
-
-3) Use MIP table CMIP5_cf3hr.cmor1.
-
-You are encouraged to upgrade to CMOR2, as the support for COSP/CMOR1 will be discontinued in future releases.
-
-Currently, the Makefile does not supoprt building COSP/CMOR1+RTTOV, altough it can be easily modified to allow for that.
-
-6.8 - Running COSP on vector computers
+6.6 - Running COSP on vector computers
 --------------------------------------------------------------------------------------------
 Since v1.3, COSP includes some optimisations for the vector architectures (tested on NEC SXs). These are protected by #ifdef SYS_SX directives. If you want to switch them on, please uncomment the line 
 
@@ -1002,7 +942,7 @@ in cosp_defs.h.
 
 Thanks to Tokuta Yokohata, Teruyuki Nishimura and Koji Ogochi for providing these optimisations.
 
-6.9 - Installing COSP in Mac computers
+6.7 - Installing COSP in Mac computers
 --------------------------------------------------------------------------------------------
 The file mac_info.txt contains information on the installation process in a Mac computer. This is a step-by-step 
 process for a particular installation in one computer, so it may not be general. It contains information on the 

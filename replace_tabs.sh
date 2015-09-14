@@ -1,6 +1,6 @@
 #!/bin/ksh
 
-for iter in *.F90
+for iter in quickbeam/*.f90.fixed ;
 do
      echo ${iter}
      mv ${iter} ${iter}.tabs 

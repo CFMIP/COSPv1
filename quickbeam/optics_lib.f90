@@ -1,5 +1,5 @@
-! $Revision: 23 $, $Date: 2011-03-31 07:41:37 -0600 (Thu, 31 Mar 2011) $
-! $URL: http://cfmip-obs-sim.googlecode.com/svn/stable/v1.3.2/quickbeam/optics_lib.f90 $
+! $Revision: 88 $, $Date: 2013-11-13 07:08:38 -0700 (Wed, 13 Nov 2013) $
+! $URL: http://cfmip-obs-sim.googlecode.com/svn/stable/v1.4.0/quickbeam/optics_lib.f90 $
 ! OPTICS_LIB: Optical proecures for for F90
 ! Compiled/Modified:
 !   07/01/06  John Haynes (haynes@atmos.colostate.edu)
@@ -16,7 +16,7 @@
 ! ----------------------------------------------------------------------------
 ! subroutine M_WAT
 ! ----------------------------------------------------------------------------
-  subroutine m_wat(freq, t, n_r, n_i)
+  subroutine m_wat(freq, tk, n_r, n_i)
   implicit none
 !  
 ! Purpose:
@@ -24,7 +24,7 @@
 !
 ! Inputs:
 !   [freq]    frequency (GHz)
-!   [t]       temperature (C)
+!   [tk]       temperature (K)
 !
 ! Outputs:
 !   [n_r]     real part index of refraction
@@ -37,7 +37,7 @@
 !   03/22/05  John Haynes (haynes@atmos.colostate.edu)
   
 ! ----- INPUTS -----
-  real*8, intent(in) :: freq,t
+  real*8, intent(in) :: freq,tk
   
 ! ----- OUTPUTS -----
   real*8, intent(out) :: n_r, n_i
@@ -46,14 +46,17 @@
   real*8 ld,es,ei,a,ls,sg,tm1,cos1,sin1
   real*8 e_r,e_i
   real*8 pi
+  real*8 tc
   complex*16 e_comp, sq
 
+  tc = tk - 273.15
+
   ld = 100.*2.99792458E8/(freq*1E9)
-  es = 78.54*(1-(4.579E-3*(t-25.)+1.19E-5*(t-25.)**2 &
-       -2.8E-8*(t-25.)**3))
-  ei = 5.27137+0.021647*t-0.00131198*t**2
-  a = -(16.8129/(t+273.))+0.0609265
-  ls = 0.00033836*exp(2513.98/(t+273.))
+  es = 78.54*(1-(4.579E-3*(tc-25.)+1.19E-5*(tc-25.)**2 &
+       -2.8E-8*(tc-25.)**3))
+  ei = 5.27137+0.021647*tc-0.00131198*tc**2
+  a = -(16.8129/(tc+273.))+0.0609265
+  ls = 0.00033836*exp(2513.98/(tc+273.))
   sg = 12.5664E8
 
   tm1 = (ls/ld)**(1-a)
@@ -85,7 +88,7 @@
 !
 ! Inputs:
 !   [freq]    frequency (GHz)
-!   [t]       temperature (C)
+!   [t]       temperature (K)
 !
 ! Outputs:
 !   [n_r]     real part index of refraction
@@ -107,8 +110,8 @@
   integer*2 :: i,lt1,lt2,nwl,nwlt
   parameter(nwl=468,nwlt=62)
 
-  real*8 :: alam,cutice,pi,t1,t2,tk,wlmax,wlmin, &
-            x,x1,x2,y,y1,y2,ylo,yhi
+  real*8 :: alam,cutice,pi,t1,t2,wlmax,wlmin, &
+            x,x1,x2,y,y1,y2,ylo,yhi,tk
 
   real*8 :: &
        tabim(nwl),tabimt(nwlt,4),tabre(nwl),tabret(nwlt,4),temref(4), &
@@ -503,15 +506,14 @@
   n_r=0.0
   n_i=0.0
 
+  tk = t
+
 ! // convert frequency to wavelength (um)
   alam=3E5/freq
   if((alam < wlmin) .or. (alam > wlmax)) then
     print *, 'm_ice: wavelength out of bounds'
     stop
   endif
-
-! // convert temperature to K
-  tk = t + 273.16
 
   if (alam < cutice) then
 

@@ -140,6 +140,31 @@ valid_min:        0.
 !----------------------------------	
 
 !============
+axis_entry: temp
+!============
+!----------------------------------
+! Axis attributes:
+!----------------------------------
+standard_name:    temperature
+units:            C
+axis:             Z             ! X, Y, Z, T (default: undeclared)
+positive:         down         ! up or down (default: undeclared)
+long_name:        Temperature
+!----------------------------------
+! Additional axis information:
+!----------------------------------
+out_name:         temp
+stored_direction: decreasing
+tolerance:        0.001
+
+type:             double
+! requested_bounds: 100000. 80000. 80000. 68000. 68000. 56000. 56000. 44000. 44000. 31000. 31000. 18000. 18000.  0. ! space-separated list of requested coordinate bounds
+must_have_bounds: yes
+!----------------------------------
+!
+
+
+!============
 axis_entry: cth16
 !============
 !----------------------------------
@@ -492,8 +517,8 @@ out_name:         scatratio
 stored_direction: increasing
 tolerance:        0.001
 type:             double
-requested:        0.005 0.605 2.1 4. 6. 8.5 12.5 17.5 22.5 27.5 35. 45. 55. 70. 50040.        ! space-separated list of requested coordinates 
-requested_bounds: 0. 0.01 0.01 1.2 1.2 3. 3. 5. 5. 7. 7. 10. 10. 15. 15. 20. 20. 25. 25. 30. 30. 40. 40. 50. 50. 60. 60. 80. 80. 100000. ! space-separated list of requested coordinate bounds
+!requested:        0.005 0.605 2.1 4. 6. 8.5 12.5 17.5 22.5 27.5 35. 45. 55. 70. 50040.        ! space-separated list of requested coordinates 
+!requested_bounds: 0. 0.01 0.01 1.2 1.2 3. 3. 5. 5. 7. 7. 10. 10. 15. 15. 20. 20. 25. 25. 30. 30. 40. 40. 50. 50. 60. 60. 80. 80. 100000. ! space-separated list of requested coordinate bounds
 must_have_bounds: yes
 !----------------------------------
 !
@@ -946,7 +971,7 @@ type:              real
 !
 
 !============
-variable_entry:    clcalipso2  
+variable_entry:    clcalipso2
 !============
 modeling_realm:    atmos
 !----------------------------------
@@ -961,10 +986,12 @@ comment:           (40 height levels)  Clouds detected by CALIPSO but below the 
 ! Additional variable information:
 !----------------------------------
 dimensions:        location alt40 time1
-out_name:          clcalipso2  
+out_name:          clcalipso2
 type:              real
 !----------------------------------
 !
+
+
 
 !============
 variable_entry:    cfadDbze94
@@ -1108,6 +1135,9 @@ out_name:          clhcalipso
 type:              real
 !----------------------------------
 !
+
+
+
 
 !============
 variable_entry:    longitude
@@ -2802,7 +2832,7 @@ modeling_realm:  atmos
 !----------------------------------
 standard_name:  cloud_area_fraction_in_atmosphere_layer
 units:         %
-long_name:          ISSCP Cloud Area Fraction
+long_name:          ISCCP Cloud Area Fraction
 comment:      7 levels x 7 tau
 !----------------------------------
 ! Additional variable information:
@@ -2823,7 +2853,7 @@ modeling_realm:  atmos
 !----------------------------------
 standard_name:  cloud_area_fraction
 units:         %
-long_name:          ISSCP Total Cloud Fraction
+long_name:          ISCCP Total Cloud Fraction
 !----------------------------------
 ! Additional variable information:
 !----------------------------------
@@ -2843,7 +2873,7 @@ modeling_realm:  atmos
 !----------------------------------
 standard_name:  cloud_albedo
 units:         1
-long_name:          ISSCP Mean Cloud Albedo
+long_name:          ISCCP Mean Cloud Albedo
 !----------------------------------
 ! Additional variable information:
 !----------------------------------
@@ -2863,7 +2893,7 @@ modeling_realm:  atmos
 !----------------------------------
 standard_name:  air_pressure_at_cloud_top
 units:         Pa 
-long_name:          ISSCP Mean Cloud Top Pressure
+long_name:          ISCCP Mean Cloud Top Pressure
 !----------------------------------
 ! Additional variable information:
 !----------------------------------
@@ -3036,6 +3066,396 @@ long_name:     Lidar Attenuated Total Backscatter (532 nm)
 !----------------------------------	
 dimensions:       location column alevel time1
 !----------------------------------	
+!
+
+!============
+variable_entry:    cltcalipsoliq
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     cloud_area_fraction
+units:             %
+cell_methods:      time: point
+long_name:         CALIPSO Liquid Total Cloud Fraction 
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        location time1
+out_name:          cltcalipsoliq
+type:              real
+!----------------------------------
+!
+
+!============
+variable_entry:    cllcalipsoliq
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     cloud_area_fraction_in_atmosphere_layer
+units:             %
+cell_methods:      time: point
+long_name:         CALIPSO Liquid Low Level Cloud Fraction 
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        location time1 p840
+out_name:          cllcalipsoliq
+type:              real
+!----------------------------------
+!
+
+!============
+variable_entry:    clmcalipsoliq
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     cloud_area_fraction_in_atmosphere_layer
+units:             %
+cell_methods:      time: point
+long_name:         CALIPSO Liquid Mid Level Cloud Fraction 
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        location time1 p560
+out_name:          clmcalipsoliq
+type:              real
+!----------------------------------
+!
+
+!============
+variable_entry:    clhcalipsoliq
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     cloud_area_fraction_in_atmosphere_layer
+units:             %
+cell_methods:      time: point
+long_name:         CALIPSO Liquid High Level Cloud Fraction 
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        location time1 p220
+out_name:          clhcalipsoliq
+type:              real
+!----------------------------------
+!
+
+!============
+variable_entry:    cltcalipsoice
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     cloud_area_fraction
+units:             %
+cell_methods:      time: point
+long_name:         CALIPSO Ice Total Cloud Fraction 
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        location time1
+out_name:          cltcalipsoice
+type:              real
+!----------------------------------
+!
+
+!============
+variable_entry:    cllcalipsoice
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     cloud_area_fraction_in_atmosphere_layer
+units:             %
+cell_methods:      time: point
+long_name:         CALIPSO Low Level Cloud Fraction
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        location time1 p840
+out_name:          cllcalipsoice
+type:              real
+!----------------------------------
+!
+
+!============
+variable_entry:    clmcalipsoice
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     cloud_area_fraction_in_atmosphere_layer
+units:             %
+cell_methods:      time: point
+long_name:         CALIPSO Ice Mid Level Cloud Fraction 
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        location time1 p560
+out_name:          clmcalipsoice
+type:              real
+!----------------------------------
+!
+
+!============
+variable_entry:    clhcalipsoice
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     cloud_area_fraction_in_atmosphere_layer
+units:             %
+cell_methods:      time: point
+long_name:         CALIPSO Ice High Level Cloud Fraction 
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        location time1 p220
+out_name:          clhcalipsoice
+type:              real
+!----------------------------------
+!
+
+!============
+variable_entry:    cltcalipsoun
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     cloud_area_fraction
+units:             %
+cell_methods:      time: point
+long_name:         CALIPSO Undefined-Phase Total Cloud Fraction 
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        location time1
+out_name:          cltcalipsoun
+type:              real
+!----------------------------------
+!
+
+!============
+variable_entry:    cllcalipsoun
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     cloud_area_fraction_in_atmosphere_layer
+units:             %
+cell_methods:      time: point
+long_name:         CALIPSO Undefined-Phase Low Level Cloud Fraction 
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        location time1 p840
+out_name:          cllcalipsoun
+type:              real
+!----------------------------------
+!
+
+!============
+variable_entry:    clmcalipsoun
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     cloud_area_fraction_in_atmosphere_layer
+units:             %
+cell_methods:      time: point
+long_name:         CALIPSO Undefined-Phase Mid Level Cloud Fraction 
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        location time1 p560
+out_name:          clmcalipsoun
+type:              real
+!----------------------------------
+!
+
+!============
+variable_entry:    clhcalipsoun
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     cloud_area_fraction_in_atmosphere_layer
+units:             %
+cell_methods:      time: point
+long_name:         CALIPSO Undefined-Phase High Level Cloud Fraction 
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        location time1 p220
+out_name:          clhcalipsoun
+type:              real
+!----------------------------------
+!
+
+!============
+variable_entry:    clcalipsoliq
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     cloud_area_fraction_in_atmosphere_layer
+units:             %
+cell_methods:      time: point
+long_name:         CALIPSO Cloud Fraction Undetected by CloudSat
+comment:           (40 height levels)  Clouds detected by CALIPSO but below the detectability threshold of CloudSat
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        location alt40 time1
+out_name:          clcalipsoliq
+type:              real
+!----------------------------------
+!
+
+!============
+variable_entry:    clcalipsoice
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     cloud_area_fraction_in_atmosphere_layer
+units:             %
+cell_methods:      time: point
+long_name:         CALIPSO Cloud Fraction Undetected by CloudSat
+comment:           (40 height levels)  Clouds detected by CALIPSO but below the detectability threshold of CloudSat
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        location alt40 time1
+out_name:          clcalipsoice
+type:              real
+!----------------------------------
+!
+
+!============
+variable_entry:    clcalipsoun
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     cloud_area_fraction_in_atmosphere_layer
+units:             %
+cell_methods:      time: point
+long_name:         CALIPSO Cloud Fraction Undetected by CloudSat
+comment:           (40 height levels)  Clouds detected by CALIPSO but below the detectability threshold of CloudSat
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        location alt40 time1
+out_name:          clcalipsoun
+type:              real
+!----------------------------------
+!
+
+
+!============
+variable_entry:    clcalipsotmp
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     cloud_area_fraction_in_atmosphere_layer
+units:             %
+cell_methods:      time: point
+long_name:         CALIPSO Cloud Fraction Undetected by CloudSat
+comment:           (40 height levels)  Clouds detected by CALIPSO but below the detectability threshold of CloudSat
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        location temp time1
+out_name:          clcalipsotmp
+type:              real
+!----------------------------------
+!
+
+
+!============
+variable_entry:    clcalipsotmpliq
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     cloud_area_fraction_in_atmosphere_layer
+units:             %
+cell_methods:      time: point
+long_name:         CALIPSO Cloud Fraction Undetected by CloudSat
+comment:           (40 height levels)  Clouds detected by CALIPSO but below the detectability threshold of CloudSat
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        location temp time1
+out_name:          clcalipsotmpliq
+type:              real
+!----------------------------------
+!
+
+
+!============
+variable_entry:    clcalipsotmpice
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     cloud_area_fraction_in_atmosphere_layer
+units:             %
+cell_methods:      time: point
+long_name:         CALIPSO Cloud Fraction Undetected by CloudSat
+comment:           (40 height levels)  Clouds detected by CALIPSO but below the detectability threshold of CloudSat
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        location temp time1
+out_name:          clcalipsotmpice
+type:              real
+!----------------------------------
+!
+
+!============
+variable_entry:    clcalipsotmpun
+!============
+modeling_realm:    atmos
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:     cloud_area_fraction_in_atmosphere_layer
+units:             %
+cell_methods:      time: point
+long_name:         CALIPSO Cloud Fraction Undetected by CloudSat
+comment:           (40 height levels)  Clouds detected by CALIPSO but below the detectability threshold of CloudSat
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:        location temp time1
+out_name:          clcalipsotmpun
+type:              real
+!----------------------------------
 !
 
 !

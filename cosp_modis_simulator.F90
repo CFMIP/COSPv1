@@ -1,8 +1,8 @@
 ! (c) 2009, Regents of the Unversity of Colorado
 !   Author: Robert Pincus, Cooperative Institute for Research in the Environmental Sciences
 ! All rights reserved.
-! $Revision: 23 $, $Date: 2011-03-31 07:41:37 -0600 (Thu, 31 Mar 2011) $
-! $URL: http://cfmip-obs-sim.googlecode.com/svn/stable/v1.3.2/cosp_modis_simulator.F90 $
+! $Revision: 88 $, $Date: 2013-11-13 07:08:38 -0700 (Wed, 13 Nov 2013) $
+! $URL: http://cfmip-obs-sim.googlecode.com/svn/stable/v1.4.0/cosp_modis_simulator.F90 $
 ! 
 ! Redistribution and use in source and binary forms, with or without modification, are permitted 
 ! provided that the following conditions are met:
@@ -80,7 +80,7 @@ contains
     ! Local variables 
     !   Leave space only for sunlit points
     
-    integer :: nPoints, nSubCols, nLevels, nSunlit, i
+    integer :: nPoints, nSubCols, nLevels, nSunlit, i, j, k
     
     ! Grid-mean quanties;  dimensions nPoints, nLevels
     real, &
@@ -146,8 +146,8 @@ contains
       ! Subcolumn properties - first stratiform cloud...
       ! 
       where(subCols%frac_out(sunlit(:), :, :) == I_LSC)
-        opticalThickness(:, :, :) = & 
-                       spread(gridBox%dtau_s      (sunlit(:),    :), dim = 2, nCopies = nSubCols)
+        !opticalThickness(:, :, :) = & 
+        !               spread(gridBox%dtau_s      (sunlit(:),    :), dim = 2, nCopies = nSubCols)
         cloudWater(:, :, :) = subcolHydro%mr_hydro(sunlit(:), :, :, I_LSCLIQ)
         waterSize (:, :, :) = subcolHydro%reff    (sunlit(:), :, :, I_LSCLIQ)
         cloudIce  (:, :, :) = subcolHydro%mr_hydro(sunlit(:), :, :, I_LSCICE)
@@ -159,17 +159,41 @@ contains
         waterSize       (:, :, :) = 0.
         iceSize         (:, :, :) = 0.
       end where 
+
+      ! Loop version of spread above - intrinsic doesn't work on certain platforms. 
+      do k = 1, nLevels
+        do j = 1, nSubCols
+          do i = 1, nSunlit
+            if(subCols%frac_out(sunlit(i), j, k) == I_LSC) then
+              opticalThickness(i, j, k) = gridBox%dtau_s(sunlit(i), k)
+            else
+              opticalThickness(i, j, k) = 0.   
+            end if 
+          end do 
+        end do
+      end do
+
       !
-      ! .. then add convective cloud 
+      ! .. then add convective cloud...
       !
       where(subCols%frac_out(sunlit(:), :, :) == I_CVC) 
-        opticalThickness(:, :, :) = &
-                       spread(gridBox%dtau_c(      sunlit(:),    :), dim = 2, nCopies = nSubCols)
+        !opticalThickness(:, :, :) = &
+        !               spread(gridBox%dtau_c(      sunlit(:),    :), dim = 2, nCopies = nSubCols)
         cloudWater(:, :, :) = subcolHydro%mr_hydro(sunlit(:), :, :, I_CVCLIQ)
         waterSize (:, :, :) = subcolHydro%reff    (sunlit(:), :, :, I_CVCLIQ)
         cloudIce  (:, :, :) = subcolHydro%mr_hydro(sunlit(:), :, :, I_CVCICE)
         iceSize   (:, :, :) = subcolHydro%reff    (sunlit(:), :, :, I_CVCICE)
       end where
+
+      ! Loop version of spread above - intrinsic doesn't work on certain platforms. 
+      do k = 1, nLevels
+        do j = 1, nSubCols
+          do i = 1, nSunlit
+            if(subCols%frac_out(sunlit(i), j, k) == I_CVC) opticalThickness(i, j, k) = gridBox%dtau_c(sunlit(i), k)
+          end do 
+        end do
+      end do
+
       !
       ! Reverse vertical order 
       !

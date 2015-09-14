@@ -1,7 +1,7 @@
 ! (c) British Crown Copyright 2008, the Met Office.
 ! All rights reserved.
-! $Revision: 23 $, $Date: 2011-03-31 07:41:37 -0600 (Thu, 31 Mar 2011) $
-! $URL: http://cfmip-obs-sim.googlecode.com/svn/stable/v1.3.2/cosp_test.F90 $
+! $Revision: 88 $, $Date: 2013-11-13 07:08:38 -0700 (Wed, 13 Nov 2013) $
+! $URL: http://cfmip-obs-sim.googlecode.com/svn/stable/v1.4.0/cosp_test.F90 $
 ! 
 ! Redistribution and use in source and binary forms, with or without modification, are permitted 
 ! provided that the following conditions are met:
@@ -66,26 +66,29 @@ PROGRAM COSPTEST
   type(cosp_isccp)   :: isccp   ! Output from ISCCP simulator
   type(cosp_modis)   :: modis   ! Output from MODIS simulator
   type(cosp_misr)    :: misr    ! Output from MISR simulator
-#ifdef RTTOV 
   type(cosp_rttov)   :: rttov   ! Output from RTTOV 
-#endif 
   type(cosp_vgrid)   :: vgrid   ! Information on vertical grid of stats
   type(cosp_radarstats) :: stradar ! Summary statistics from radar simulator
   type(cosp_lidarstats) :: stlidar ! Summary statistics from lidar simulator
+  type(var1d) :: v1d(N1D+1) ! Structures needed by output routines for 1D variables
+  type(var2d) :: v2d(N2D) ! Structures needed by output routines for 2D variables
+  type(var3d) :: v3d(N3D) ! Structures needed by output routines for 3D variables
+  integer ::  grid_id,latvar_id,lonvar_id,lon_axid,lat_axid,time_axid,height_axid,height_mlev_axid,column_axid,sza_axid, &
+              temp_axid,channel_axid,dbze_axid,sratio_axid,MISR_CTH_axid,tau_axid,pressure2_axid
   real,dimension(:),allocatable :: lon,lat
   real,dimension(:,:),allocatable,target :: p,ph,zlev,zlev_half,T,sh,rh,tca,cca, &
                     mr_lsliq,mr_lsice,mr_ccliq,mr_ccice,fl_lsrain,fl_lssnow,fl_lsgrpl, &
                     fl_ccrain,fl_ccsnow,dtau_s,dtau_c,dem_s,dem_c,mr_ozone
   real,dimension(:,:,:),allocatable :: Reff
-  real,dimension(:),allocatable :: skt,landmask,sfc_height,u_wind,v_wind,sunlit
-  integer :: t0,t1,count_rate,count_max
+  real,dimension(:),allocatable :: skt,landmask,u_wind,v_wind,sunlit
+  integer :: t0,t1,t2,t3,count_rate,count_max
   integer :: Nlon,Nlat,geomode
   real :: radar_freq,k2,ZenAng,co2,ch4,n2o,co,emsfc_lw
   integer,dimension(RTTOV_MAX_CHANNELS) :: Channels
   real,dimension(RTTOV_MAX_CHANNELS) :: Surfem
   integer :: surface_radar,use_mie_tables,use_gas_abs,do_ray,melt_lay
   integer :: Nprmts_max_hydro,Naero,Nprmts_max_aero,lidar_ice_type
-  integer :: platform,satellite,Instrument,Nchannels
+  integer :: platform,satellite,Instrument,Nchannels,N1
   logical :: use_vgrid,csat_vgrid,use_precipitation_fluxes,use_reff
   double precision :: time,time_bnds(2),time_step
   real :: toffset_step,half_time_step
@@ -120,7 +123,7 @@ PROGRAM COSPTEST
   Nfiles = i-1
   if (Nfiles < 1) call cosp_error('cosp_test','Number of files < 1')
   if (Nfiles > N_MAX_INPUT_FILES) call cosp_error('cosp_test','Number of files > N_MAX_INPUT_FILES')
-  
+
   !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   ! Allocate local arrays
   !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -132,14 +135,12 @@ PROGRAM COSPTEST
            mr_lsice(Npoints,Nlevels),mr_ccliq(Npoints,Nlevels),mr_ccice(Npoints,Nlevels), &
            fl_lsrain(Npoints,Nlevels),fl_lssnow(Npoints,Nlevels),fl_lsgrpl(Npoints,Nlevels),fl_ccrain(Npoints,Nlevels), &
            fl_ccsnow(Npoints,Nlevels),Reff(Npoints,Nlevels,N_HYDRO),dtau_s(Npoints,Nlevels),dtau_c(Npoints,Nlevels), &
-           dem_s(Npoints,Nlevels),dem_c(Npoints,Nlevels),skt(Npoints),landmask(Npoints),sfc_height(Npoints), &
+           dem_s(Npoints,Nlevels),dem_c(Npoints,Nlevels),skt(Npoints),landmask(Npoints), &
            mr_ozone(Npoints,Nlevels),u_wind(Npoints),v_wind(Npoints),sunlit(Npoints))
-  
-  
+
   call system_clock(t0,count_rate,count_max) !!! Only for testing purposes
-  
+
   ! Example that processes ntsteps. It always uses the same input data
-  wmode = 'replace' ! Only for first iteration
   time_step      = 3.D0/24.D0
   time           = 8*1.D0/8.D0 ! First time step
   toffset_step   = time_step/Npoints
@@ -156,12 +157,13 @@ PROGRAM COSPTEST
         ! input : surface to top
         call nc_read_input_file(dfinput,Npoints,Nlevels,N_HYDRO,lon,lat,p,ph,zlev,zlev_half,T,sh,rh,tca,cca, &
                 mr_lsliq,mr_lsice,mr_ccliq,mr_ccice,fl_lsrain,fl_lssnow,fl_lsgrpl,fl_ccrain,fl_ccsnow,Reff, &
-                dtau_s,dtau_c,dem_s,dem_c,skt,landmask,sfc_height,mr_ozone,u_wind,v_wind,sunlit, &
+                dtau_s,dtau_c,dem_s,dem_c,skt,landmask,mr_ozone,u_wind,v_wind,sunlit, &
                 emsfc_lw,geomode,Nlon,Nlat)
                 ! geomode = 2 for (lon,lat) mode.
                 ! geomode = 3 for (lat,lon) mode.
                 ! In those modes it returns Nlon and Nlat with the correct values
-        
+
+        call system_clock(t1,count_rate,count_max)
         !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         ! Allocate memory for gridbox type
         !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -173,7 +175,7 @@ PROGRAM COSPTEST
                                     use_precipitation_fluxes,use_reff, &
                                     Platform,Satellite,Instrument,Nchannels,ZenAng, &
                                     channels(1:Nchannels),surfem(1:Nchannels),co2,ch4,n2o,co,gbx)
-        
+
         !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         ! Here code to populate input structure
         !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -196,12 +198,11 @@ PROGRAM COSPTEST
         gbx%psfc = ph(:,1)
         gbx%skt  = skt
         gbx%land = landmask
-!         gbx%sfc_height  = sfc_height
         gbx%mr_ozone  = mr_ozone
         gbx%u_wind  = u_wind
         gbx%v_wind  = v_wind
         gbx%sunlit  = sunlit
-        
+
         gbx%mr_hydro(:,:,I_LSCLIQ) = mr_lsliq
         gbx%mr_hydro(:,:,I_LSCICE) = mr_lsice
         gbx%mr_hydro(:,:,I_CVCLIQ) = mr_ccliq
@@ -211,7 +212,7 @@ PROGRAM COSPTEST
         gbx%grpl_ls = fl_lsgrpl
         gbx%rain_cv = fl_ccrain
         gbx%snow_cv = fl_ccsnow
-        
+
         gbx%Reff = Reff
         gbx%Reff(:,:,I_LSRAIN) = 0.0
 
@@ -221,13 +222,12 @@ PROGRAM COSPTEST
         gbx%dem_s    = dem_s
         gbx%dem_c    = dem_c
 
-               
         !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         ! Define new vertical grid
         !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         print *, 'Defining new vertical grid...'
         call construct_cosp_vgrid(gbx,Nlr,use_vgrid,csat_vgrid,vgrid)
-        
+
         !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         ! Allocate memory for other types
         !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -240,43 +240,53 @@ PROGRAM COSPTEST
         call construct_cosp_isccp(cfg,Npoints,Ncolumns,Nlevels,isccp)
         call construct_cosp_modis(cfg,Npoints,modis)
         call construct_cosp_misr(cfg,Npoints,misr)
-#ifdef RTTOV 
-        call construct_cosp_rttov(Npoints,Nchannels,rttov) 
-#endif
+        call construct_cosp_rttov(cfg,Npoints,Nchannels,rttov)
+
         !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         ! Call simulator
         !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         print *, 'Calling simulator...'
-#ifdef RTTOV 
+#ifdef RTTOV
         call cosp(overlap,Ncolumns,cfg,vgrid,gbx,sgx,sgradar,sglidar,isccp,misr,modis,rttov,stradar,stlidar)
 #else
         call cosp(overlap,Ncolumns,cfg,vgrid,gbx,sgx,sgradar,sglidar,isccp,misr,modis,stradar,stlidar)
 #endif
-
+        call system_clock(t2,count_rate,count_max)
 
         !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         ! Write outputs to CMOR-compliant NetCDF
         !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        if (i /= 1) wmode = 'append'
+        ! Initialise CMOR interface
         gbx%time = time
+        ! Write one time step to file
         if (cfg%Lwrite_output) then
+            N1 = N1D
+            if (geomode == 1) N1 = N1D+1
             print *, 'Writing outputs...'
-            if (geomode == 1) then 
-#ifdef RTTOV 
-               call nc_write_cosp_1d(cmor_nl,wmode,cfg,vgrid,gbx,sgx,sgradar,sglidar, &
-                                     isccp,misr,modis,rttov,stradar,stlidar)
-#else
-               call nc_write_cosp_1d(cmor_nl,wmode,cfg,vgrid,gbx,sgx,sgradar,sglidar, &
-                                     isccp,misr,modis,stradar,stlidar)
-#endif
+            if (i == 1) call nc_cmor_init(cmor_nl,'replace',cfg,vgrid,gbx,sgx,sgradar,sglidar, &
+                                  isccp,misr,modis,rttov,stradar,stlidar,geomode,Nlon,Nlat,N1,N2D,N3D, &
+                                  lon_axid,lat_axid,time_axid,height_axid,height_mlev_axid,grid_id,lonvar_id,latvar_id, &
+                                  column_axid,sza_axid,temp_axid,channel_axid,dbze_axid, &
+                                  sratio_axid,MISR_CTH_axid,tau_axid,pressure2_axid, &
+                                  v1d(1:N1),v2d,v3d)
+            if (geomode == 1) then
+               print *, 'Associate'
+               call nc_cmor_associate_1d(grid_id,time_axid,height_axid,height_mlev_axid,column_axid,sza_axid, &
+                         temp_axid,channel_axid,dbze_axid,sratio_axid,MISR_CTH_axid,tau_axid,pressure2_axid, &
+                         Nlon,Nlat,vgrid,gbx,sgx,sgradar,sglidar,isccp,misr,modis,rttov,stradar,stlidar, &
+                         v1d(1:N1),v2d,v3d)
+               print *, 'Write'
+               call nc_cmor_write_1d(gbx,time_bnds,lonvar_id,latvar_id,N1,N2D,N3D,v1d(1:N1),v2d,v3d)
             elseif (geomode >  1) then
-#ifdef RTTOV 
-               call nc_write_cosp_2d(cmor_nl,wmode,cfg,vgrid,gbx,sgx,sgradar,sglidar, &
-                                     isccp,misr,modis,rttov,stradar,stlidar,geomode,Nlon,Nlat)
-#else
-               call nc_write_cosp_2d(cmor_nl,wmode,cfg,vgrid,gbx,sgx,sgradar,sglidar, &
-                                     isccp,misr,modis,stradar,stlidar,geomode,Nlon,Nlat)
-#endif
+               call nc_cmor_associate_2d(lon_axid,lat_axid,time_axid,height_axid,height_mlev_axid,column_axid,sza_axid, &
+                         temp_axid,channel_axid,dbze_axid,sratio_axid,MISR_CTH_axid,tau_axid,pressure2_axid, &
+                         Nlon,Nlat,vgrid,gbx,sgx,sgradar,sglidar,isccp,misr,modis,rttov,stradar,stlidar, &
+                         v1d(1:N1),v2d,v3d)
+               call nc_cmor_write_2d(time,time_bnds,geomode,Nlon,Nlat,N1,N2D,N3D,v1d(1:N1),v2d,v3d)
+
+            endif
+            if (i == Nfiles) then
+              call nc_cmor_close()
             endif
         endif
 
@@ -293,10 +303,8 @@ PROGRAM COSPTEST
         call free_cosp_isccp(isccp)
         call free_cosp_misr(misr)
         call free_cosp_modis(modis)
-#ifdef RTTOV 
-        call free_cosp_rttov(rttov) 
-#endif
-        call free_cosp_vgrid(vgrid)  
+        call free_cosp_rttov(rttov)
+        call free_cosp_vgrid(vgrid)
         ! Update time
         time = time + time_step
   enddo
@@ -305,10 +313,14 @@ PROGRAM COSPTEST
   !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   deallocate(lon,lat,p,ph,zlev,zlev_half,T,sh,rh,tca,cca, mr_lsliq,mr_lsice,mr_ccliq,mr_ccice, &
            fl_lsrain,fl_lssnow,fl_lsgrpl,fl_ccrain,fl_ccsnow,Reff,dtau_s,dtau_c,dem_s,dem_c,skt, &
-           landmask,sfc_height,mr_ozone,u_wind,v_wind,sunlit)
+           landmask,mr_ozone,u_wind,v_wind,sunlit)
 
   ! Time in s. Only for testing purposes
-  call system_clock(t1,count_rate,count_max)
-  print *,(t1-t0)*1.0/count_rate
+  call system_clock(t3,count_rate,count_max)
+  do i=1,N_SIMULATORS
+      print *,'=== '//trim(SIM_NAME(i))//': ', float(tsim(i))/count_rate
+  enddo
+  print *,'=== COSP: ', (t2-t1)*1.0/count_rate
+  print *,'=== TOTAL: ', (t3-t0)*1.0/count_rate
     
 END PROGRAM COSPTEST
