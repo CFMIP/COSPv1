@@ -1,5 +1,7 @@
 ! (c) British Crown Copyright 2008, the Met Office.
 ! All rights reserved.
+! $Revision: 26 $, $Date: 2011-04-04 03:43:56 -0600 (Mon, 04 Apr 2011) $
+! $URL: http://cfmip-obs-sim.googlecode.com/svn/stable/v1.3.2/cosp_constants.F90 $
 ! 
 ! Redistribution and use in source and binary forms, with or without modification, are permitted 
 ! provided that the following conditions are met:
@@ -33,7 +35,7 @@
 MODULE MOD_COSP_CONSTANTS
     IMPLICIT NONE
     
-    character(len=32) :: COSP_VERSION='COSP v1.3.1'
+    character(len=32) :: COSP_VERSION='COSP v1.3.2'
     
     ! Indices to address arrays of LS and CONV hydrometeors
     integer,parameter :: I_LSCLIQ = 1

@@ -1,3 +1,5 @@
+! $Revision: 23 $, $Date: 2011-03-31 07:41:37 -0600 (Thu, 31 Mar 2011) $
+! $URL: http://cfmip-obs-sim.googlecode.com/svn/stable/v1.3.2/quickbeam/radar_simulator.f90 $
   subroutine radar_simulator(freq,k2,do_ray,use_gas_abs,use_mie_table,mt, &
     nhclass,hp,nprof,ngate,nsizes,D,hgt_matrix,hm_matrix,re_matrix,p_matrix,t_matrix, &
     rh_matrix,Ze_non,Ze_ray,h_atten_to_vol,g_atten_to_vol,dBZe, &

@@ -1,3 +1,5 @@
+! $Revision: 23 $, $Date: 2011-03-31 07:41:37 -0600 (Thu, 31 Mar 2011) $
+! $URL: http://cfmip-obs-sim.googlecode.com/svn/stable/v1.3.2/quickbeam/load_hydrometeor_classes.f90 $
   subroutine load_hydrometeor_classes(Nprmts_max,dist_prmts_hydro,hp,nhclass)
   use radar_simulator_types
   implicit none

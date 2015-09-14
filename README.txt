@@ -58,6 +58,27 @@ the directory quickbeam.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 3.- DOWNLOADING AND UNPACKING
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Since v1.3.1, the code lives in Google code:
+http://code.google.com/p/cfmip-obs-sim/
+
+We encourage you to download the latest stable release using a subversion client on your local computer.
+You can accomplish this via the command line at a terminal prompt:
+
+svn co http://cfmip-obs-sim.googlecode.com/svn/stable/current COSP
+
+When COSP is stable we will update this directory, so you can update your own code using 'svn update'. 
+
+The input and test NetCDF files have to be downloaded separately, from:
+http://code.google.com/p/cfmip-obs-sim/downloads/list
+
+Copy cosp-test-files-vN.N.N.tgz to your COSP directory and run:
+tar -txzvf cosp-test-files-vN.N.N.tgz
+
+Now you can follow the steps in Section 4.
+
+Older versions: 1.3.0 and before
+------------------------------------
+These versions are not available in the Google code svn repository, only in the CFMIP website.
 a) Download cosp.vN.N.tar.gz in your system. I'll assume that you have chosen ~/cosp as your
    target directory.
 b) cd ~/cosp
@@ -115,7 +136,7 @@ the input file:
 You will also need to modify the CMOR namelist
 in ~/cosp/cosp.vN.N/cmor/cosp_cmor_nl.txt. Specifically, you will need to use
    
-   TABLE = 'CMIP5_cf3hr' for 'cosp_input_um.nc'
+   TABLE = 'COSP_table_1D' for 'cosp_input_um.nc'
    TABLE = 'COSP_table_2D' for 'cosp_input_um_2d.nc'
    
 COSP_table_2D contains the definitions of the variables in a lon/lat grid.
@@ -680,6 +701,20 @@ CloudTopPressure, retrievedSize and retrievedTau set
 15) Extra tau bin (tau<0.3) has been included in MODIS simulator, this makes the MODIS and ISCCP histograms consistent.
     Necessary modifications have been made to the 1D and 2D MIP tables.
 16) The CFMIP2 namelists in the cfmip2 directory have been updated to reflect the latest changes.
+
+5.11 - Changes in v1.3.2
+--------------------------------------------------------------------------------------------
+1) Bug fix in modis_simulator.F90. Runtime error in Lahey compilers when using negative arguments to
+  log10. No impact in results as these values were masked out. More details in message sent
+  to the users group (2011/02/25).
+2) Deleted call to flush subroutine in modis_simulator.F90.
+3) Minor correction of this README, section 4.2.
+4) Changes to cosp_io.F90. If surface emissivity is not present in input file then it is set to 1.0,
+   and a warning message is issued.
+5) N_MAX_INPUT_FILES increased to 10000 in cosp_test.F90. The value of this constant can be modified
+   to suit the user requirements.
+6) Bug fix in cosp_stats.F90/COSP_CHANGE_VERTICAL_GRID. dz goes out of bounds in certain configurations.
+   More details in message sent to the users group (2011/03/22).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 6.- ADDITIONAL NOTES

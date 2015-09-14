@@ -1,3 +1,5 @@
+! $Revision: 23 $, $Date: 2011-03-31 07:41:37 -0600 (Thu, 31 Mar 2011) $
+! $URL: http://cfmip-obs-sim.googlecode.com/svn/stable/v1.3.2/quickbeam/dsd.f90 $
   subroutine dsd(Q,Re,D,N,nsizes,dtype,rho_a,tc, &
              dmin,dmax,apm,bpm,rho_c,p1,p2,p3,fc,scaled)
   use array_lib

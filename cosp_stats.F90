@@ -1,5 +1,7 @@
 ! (c) British Crown Copyright 2008, the Met Office.
 ! All rights reserved.
+! $Revision: 23 $, $Date: 2011-03-31 07:41:37 -0600 (Thu, 31 Mar 2011) $
+! $URL: http://cfmip-obs-sim.googlecode.com/svn/stable/v1.3.2/cosp_stats.F90 $
 !
 ! Redistribution and use in source and binary forms, with or without modification, are permitted
 ! provided that the following conditions are met:
@@ -259,12 +261,12 @@ SUBROUTINE COSP_CHANGE_VERTICAL_GRID(Npoints,Ncolumns,Nlevels,zfull,zhalf,y,M,zl
    endif
 #else
    r = R_UNDEF
+   dz = zu - zl
    do i=1,Npoints
      ! Vertical grid at that point
      xl = zhalf(i,:)
      xu(1:Nlevels-1) = xl(2:Nlevels)
      xu(Nlevels) = zfull(i,Nlevels) +  zfull(i,Nlevels) - zhalf(i,Nlevels) ! Top level symmetric
-     dz = zu - zl
      yp = y(i,:,:) ! Temporary variable to regrid
      ! Find weights
      w = 0.0
@@ -285,7 +287,7 @@ SUBROUTINE COSP_CHANGE_VERTICAL_GRID(Npoints,Ncolumns,Nlevels,zfull,zhalf,y,M,zl
          else if ((xl(j) <= zl(k)).and.(xu(j) >= zu(k))) then
            !  xl(j)---------------------------xu(j)
            !        zl(k)--------------zu(k)
-           w(j,k) = dz(j)
+           w(j,k) = dz(k)
          endif
        enddo
      enddo

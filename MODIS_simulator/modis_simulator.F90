@@ -1,6 +1,8 @@
 ! (c) 2009-2010, Regents of the Unversity of Colorado
 !   Author: Robert Pincus, Cooperative Institute for Research in the Environmental Sciences
 ! All rights reserved.
+! $Revision: 23 $, $Date: 2011-03-31 07:41:37 -0600 (Thu, 31 Mar 2011) $
+! $URL: http://cfmip-obs-sim.googlecode.com/svn/stable/v1.3.2/MODIS_simulator/modis_simulator.F90 $
 ! 
 ! Redistribution and use in source and binary forms, with or without modification, are permitted 
 ! provided that the following conditions are met:
@@ -98,7 +100,7 @@ module mod_modis_sim
     tauHistogramBoundaries = (/ min_OpticalThickness, 1.3, 3.6, 9.4, 23., 60., huge(dummy_real) /) 
   real, dimension(numPressureHistogramBins + 1), parameter :: & ! Units Pa 
     pressureHistogramBoundaries = (/ 0., 18000., 31000., 44000., 56000., 68000., 80000., huge(dummy_real) /) 
-  real, parameter :: highCloudPressureLimit = 440. * 100., lowCloudPressureLimit = 680.  * 100.
+  real, parameter :: highCloudPressureLimit = 440. * 100., lowCloudPressureLimit = 680. * 100.
   !
   ! For output - nominal bin centers and  bin boundaries. On output pressure bins are highest to lowest. 
   !
@@ -468,9 +470,11 @@ contains
     Optical_Thickness_Water_Mean = sum(optical_thickness, mask = waterCloudMask, dim = 2) / Cloud_Fraction_Water_Mean(:)
     Optical_Thickness_Ice_Mean   = sum(optical_thickness, mask = iceCloudMask,   dim = 2) / Cloud_Fraction_Ice_Mean(:)
    
-    Optical_Thickness_Total_MeanLog10 = sum(log10(optical_thickness), mask = cloudMask,      dim = 2) / Cloud_Fraction_Total_Mean(:)
-    Optical_Thickness_Water_MeanLog10 = sum(log10(optical_thickness), mask = waterCloudMask, dim = 2) / Cloud_Fraction_Water_Mean(:)
-    Optical_Thickness_Ice_MeanLog10   = sum(log10(optical_thickness), mask = iceCloudMask,   dim = 2) / Cloud_Fraction_Ice_Mean(:)
+    ! We take the absolute value of optical thickness here to satisfy compilers that complains when we 
+    !   evaluate the logarithm of a negative number, even though it's not included in the sum. 
+    Optical_Thickness_Total_MeanLog10 = sum(log10(abs(optical_thickness)), mask = cloudMask,      dim = 2) / Cloud_Fraction_Total_Mean(:)
+    Optical_Thickness_Water_MeanLog10 = sum(log10(abs(optical_thickness)), mask = waterCloudMask, dim = 2) / Cloud_Fraction_Water_Mean(:)
+    Optical_Thickness_Ice_MeanLog10   = sum(log10(abs(optical_thickness)), mask = iceCloudMask,   dim = 2) / Cloud_Fraction_Ice_Mean(:)
    
     Cloud_Particle_Size_Water_Mean = sum(particle_size, mask = waterCloudMask, dim = 2) / Cloud_Fraction_Water_Mean(:)
     Cloud_Particle_Size_Ice_Mean   = sum(particle_size, mask = iceCloudMask,   dim = 2) / Cloud_Fraction_Ice_Mean(:)
@@ -1007,7 +1011,6 @@ contains
     
     write(6, *) "Failure in MODIS simulator" 
     write(6, *)  trim(message) 
-    flush(6)
     stop
   end subroutine complain_and_die
   !------------------------------------------------------------------------------------------------

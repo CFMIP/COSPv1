@@ -1,9 +1,9 @@
 
-! $Id: test_isccp_cloud_types.f,v 4.0 2009/02/13 08:10:16 hadmw Exp $      
-
 ! *****************************COPYRIGHT****************************
 ! (c) British Crown Copyright 2009, the Met Office.
 ! All rights reserved.
+! $Revision: 23 $, $Date: 2011-03-31 07:41:37 -0600 (Thu, 31 Mar 2011) $
+! $URL: http://cfmip-obs-sim.googlecode.com/svn/stable/v1.3.2/icarus-scops-4.1-bsd/test_isccp_cloud_types.f $
 ! 
 ! Redistribution and use in source and binary forms, with or without 
 ! modification, are permitted provided that the

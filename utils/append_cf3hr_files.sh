@@ -1,5 +1,5 @@
 #!/bin/sh
-# ! (c) British Crown Copyright 2008, the Met Office.
+# ! (c) British Crown Copyright 2010, the Met Office.
 # ! All rights reserved.
 # ! 
 # ! Redistribution and use in source and binary forms, with or without modification, are permitted 

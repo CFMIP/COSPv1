@@ -1,5 +1,7 @@
 ! (c) British Crown Copyright 2008, the Met Office.
 ! All rights reserved.
+! $Revision: 23 $, $Date: 2011-03-31 07:41:37 -0600 (Thu, 31 Mar 2011) $
+! $URL: http://cfmip-obs-sim.googlecode.com/svn/stable/v1.3.2/cosp_io.F90 $
 ! 
 ! Redistribution and use in source and binary forms, with or without modification, are permitted 
 ! provided that the following conditions are met:
@@ -39,8 +41,8 @@ MODULE MOD_COSP_IO
   USE cmor_users_functions
   USE netcdf
   use MOD_COSP_Modis_Simulator
-  
   IMPLICIT NONE
+  include 'netcdf.inc'
   
   ! Types to be used as arrays of pointers
   TYPE var1d
@@ -962,13 +964,19 @@ CONTAINS
     ! SFC emissivity
     errst = nf90_inq_varid(ncid, 'emsfc_lw', vid)
     if (errst /= 0) then
-        errmsg='Error in nf90_inq_varid, var: emsfc_lw'
-        call cosp_error(routine_name,errmsg,errcode=errst)
-    endif
-    errst = nf90_get_var(ncid, vid, emsfc_lw)
-    if (errst /= 0) then
-        errmsg='Error in nf90_get_var, var: emsfc_lw'
-        call cosp_error(routine_name,errmsg,errcode=errst)
+        if (errst == nf_enotvar) then ! Does not exist, use 1.0
+            emsfc_lw = 1.0
+            print *, ' ********* COSP Warning:  emsfc_lw does not exist in input file. Set to 1.0.'
+        else  ! Other error, stop
+            errmsg='Error in nf90_inq_varid, var: emsfc_lw'
+            call cosp_error(routine_name,errmsg,errcode=errst)
+        endif
+    else
+        errst = nf90_get_var(ncid, vid, emsfc_lw)
+        if (errst /= 0) then
+            errmsg='Error in nf90_get_var, var: emsfc_lw'
+            call cosp_error(routine_name,errmsg,errcode=errst)
+        endif
     endif
 
     

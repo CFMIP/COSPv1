@@ -1,3 +1,5 @@
+c $Revision: 23 $, $Date: 2011-03-31 07:41:37 -0600 (Thu, 31 Mar 2011) $
+c $URL: http://cfmip-obs-sim.googlecode.com/svn/stable/v1.3.2/quickbeam/predict_psd07.f $
       program predict_psd07
 
 c 14 Feb 2007

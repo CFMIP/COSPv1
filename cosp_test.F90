@@ -1,5 +1,7 @@
 ! (c) British Crown Copyright 2008, the Met Office.
 ! All rights reserved.
+! $Revision: 23 $, $Date: 2011-03-31 07:41:37 -0600 (Thu, 31 Mar 2011) $
+! $URL: http://cfmip-obs-sim.googlecode.com/svn/stable/v1.3.2/cosp_test.F90 $
 ! 
 ! Redistribution and use in source and binary forms, with or without modification, are permitted 
 ! provided that the following conditions are met:
@@ -41,7 +43,7 @@ PROGRAM COSPTEST
 !   character(len=64)  :: cosp_output_nl='cfmip2/cosp_output_cfmip2_short_offline.txt'
   character(len=64)  :: cosp_output_nl='cosp_output_nl.txt'
   character(len=512) :: dinput ! Directory with input files
-  integer,parameter :: N_MAX_INPUT_FILES = 1000 ! Maximum number of input files
+  integer,parameter :: N_MAX_INPUT_FILES = 10000 ! Maximum number of input files
   character(len=64),dimension(N_MAX_INPUT_FILES) :: finput ! File names
   character(len=600) :: dfinput ! Input file
   character(len=512) :: cmor_nl
