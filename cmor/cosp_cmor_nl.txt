@@ -24,7 +24,7 @@
 
 &CMOR
   INPATH = './cmor',
-  OUTPATH = './outputs',
+  OUTPATH = './data/outputs/local1.4',
   START_DATE = '2008-01-01',
   MODEL_ID = 'HadGEM2-ES',
   EXPERIMENT_ID = 'AMIP',

@@ -74,7 +74,7 @@ PROGRAM COSPTEST
   type(var2d) :: v2d(N2D) ! Structures needed by output routines for 2D variables
   type(var3d) :: v3d(N3D) ! Structures needed by output routines for 3D variables
   integer ::  grid_id,latvar_id,lonvar_id,lon_axid,lat_axid,time_axid,height_axid,height_mlev_axid,column_axid,sza_axid, &
-              temp_axid,channel_axid,dbze_axid,sratio_axid,MISR_CTH_axid,tau_axid,pressure2_axid
+              temp_axid,channel_axid,dbze_axid,sratio_axid,MISR_CTH_axid,tau_axid,pressure2_axid,ReffLiq_axid,ReffIce_axid
   real,dimension(:),allocatable :: lon,lat
   real,dimension(:,:),allocatable,target :: p,ph,zlev,zlev_half,T,sh,rh,tca,cca, &
                     mr_lsliq,mr_lsice,mr_ccliq,mr_ccice,fl_lsrain,fl_lssnow,fl_lsgrpl, &
@@ -267,19 +267,19 @@ PROGRAM COSPTEST
                                   isccp,misr,modis,rttov,stradar,stlidar,geomode,Nlon,Nlat,N1,N2D,N3D, &
                                   lon_axid,lat_axid,time_axid,height_axid,height_mlev_axid,grid_id,lonvar_id,latvar_id, &
                                   column_axid,sza_axid,temp_axid,channel_axid,dbze_axid, &
-                                  sratio_axid,MISR_CTH_axid,tau_axid,pressure2_axid, &
+                                  sratio_axid,MISR_CTH_axid,tau_axid,pressure2_axid,ReffLiq_axid,ReffIce_axid, &
                                   v1d(1:N1),v2d,v3d)
             if (geomode == 1) then
                print *, 'Associate'
                call nc_cmor_associate_1d(grid_id,time_axid,height_axid,height_mlev_axid,column_axid,sza_axid, &
-                         temp_axid,channel_axid,dbze_axid,sratio_axid,MISR_CTH_axid,tau_axid,pressure2_axid, &
+                         temp_axid,channel_axid,dbze_axid,sratio_axid,MISR_CTH_axid,tau_axid,pressure2_axid,ReffLiq_axid,ReffIce_axid, &
                          Nlon,Nlat,vgrid,gbx,sgx,sgradar,sglidar,isccp,misr,modis,rttov,stradar,stlidar, &
                          v1d(1:N1),v2d,v3d)
                print *, 'Write'
                call nc_cmor_write_1d(gbx,time_bnds,lonvar_id,latvar_id,N1,N2D,N3D,v1d(1:N1),v2d,v3d)
             elseif (geomode >  1) then
                call nc_cmor_associate_2d(lon_axid,lat_axid,time_axid,height_axid,height_mlev_axid,column_axid,sza_axid, &
-                         temp_axid,channel_axid,dbze_axid,sratio_axid,MISR_CTH_axid,tau_axid,pressure2_axid, &
+                         temp_axid,channel_axid,dbze_axid,sratio_axid,MISR_CTH_axid,tau_axid,pressure2_axid,ReffLiq_axid,ReffIce_axid, &
                          Nlon,Nlat,vgrid,gbx,sgx,sgradar,sglidar,isccp,misr,modis,rttov,stradar,stlidar, &
                          v1d(1:N1),v2d,v3d)
                call nc_cmor_write_2d(time,time_bnds,geomode,Nlon,Nlat,N1,N2D,N3D,v1d(1:N1),v2d,v3d)

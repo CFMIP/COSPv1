@@ -842,7 +842,7 @@ CONTAINS
                               isccp,misr,modis,rttov,stradar,stlidar,geomode,Nlon,Nlat,N1,N2,N3, &
                               lon_axid,lat_axid,time_axid,height_axid,height_mlev_axid,grid_id,lonvar_id,latvar_id, &
                               column_axid,sza_axid,temp_axid,channel_axid,dbze_axid, &
-                              sratio_axid,MISR_CTH_axid,tau_axid,pressure2_axid, &
+                              sratio_axid,MISR_CTH_axid,tau_axid,pressure2_axid,reffICE_axid,reffLIQ_axid, &
                               v1d,v2d,v3d)
    ! Input arguments
    character(len=*),intent(in) :: cmor_nl
@@ -862,7 +862,7 @@ CONTAINS
    integer,intent(in) :: geomode,Nlon,Nlat,N1,N2,N3
    integer,intent(out) :: grid_id,latvar_id,lonvar_id,column_axid,height_axid,dbze_axid,height_mlev_axid,sratio_axid, &
               tau_axid,pressure2_axid,lon_axid,lat_axid,time_axid,sza_axid,MISR_CTH_axid, &
-              channel_axid,temp_axid
+              channel_axid,temp_axid,reffICE_axid,reffLIQ_axid
    type(var1d),intent(inout) :: v1d(N1)
    type(var2d),intent(inout) :: v2d(N2)
    type(var3d),intent(inout) :: v3d(N3)
@@ -1030,7 +1030,14 @@ CONTAINS
    MISR_CTH_axid = cmor_axis(table=table, table_entry='cth16', units='m', length=MISR_N_CTH, &
                             coord_vals=MISR_CTH,cell_bounds=MISR_CTH_BNDS)
    time_axid  = cmor_axis(table=table, table_entry='time1', units='days since '//trim(start_date), length=maxtsteps)
-
+   
+   ! DJS2015 START: Add new axis IDs for MODIS joiunt-histograms of tau/reff.
+   reffICE_axid = cmor_axis(table=table,table_entry='reffIce',units='microns',length=numMODISReffIceBins, &
+        coord_vals = reffICE_binCenters, cell_bounds = reffICE_binBounds)
+   reffLIQ_axid = cmor_axis(table=table,table_entry='reffLiq',units='microns',length=numMODISReffLiqBins, &
+        coord_vals = reffLIQ_binCenters, cell_bounds = reffLIQ_binBounds)
+   ! DJS2015 END
+   
    !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    ! Define grid
    !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1048,15 +1055,17 @@ CONTAINS
    ! Associate table of variables. Needed here to fill in the table with names.
    !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    if (geomode == 1) then
-      call nc_cmor_associate_1d(grid_id,time_axid,height_axid,height_mlev_axid,column_axid,sza_axid, &
-                         temp_axid,channel_axid,dbze_axid,sratio_axid,MISR_CTH_axid,tau_axid,pressure2_axid, &
+      call nc_cmor_associate_1d(grid_id,time_axid,height_axid,height_mlev_axid,column_axid,sza_axid,   &
+                         temp_axid,channel_axid,dbze_axid,sratio_axid,MISR_CTH_axid,tau_axid,          &
+                         pressure2_axid,reffICE_axid,reffLIQ_axid,                                     &
                          Nlon,Nlat,vgrid,gb,sg,sgradar,sglidar,isccp,misr,modis,rttov,stradar,stlidar, &
                          v1d,v2d,v3d)
    else
-      call nc_cmor_associate_2d(lon_axid,lat_axid,time_axid,height_axid,height_mlev_axid,column_axid,sza_axid, &
-                 temp_axid,channel_axid,dbze_axid,sratio_axid,MISR_CTH_axid,tau_axid,pressure2_axid, &
-                 Nlon,Nlat,vgrid,gb,sg,sgradar,sglidar,isccp,misr,modis,rttov,stradar,stlidar, &
-                 v1d,v2d,v3d)
+      call nc_cmor_associate_2d(lon_axid,lat_axid,time_axid,height_axid,height_mlev_axid,column_axid,  &
+                                sza_axid,temp_axid,channel_axid,dbze_axid,sratio_axid,MISR_CTH_axid,   &
+                                tau_axid,pressure2_axid,reffICE_axid,reffLIQ_axid,                     &
+                                Nlon,Nlat,vgrid,gb,sg,sgradar,sglidar,isccp,misr,modis,rttov,stradar,  &
+                                stlidar,v1d,v2d,v3d)
    endif
    v1d(:)%lout = .false.
    v2d(:)%lout = .false.
@@ -1133,12 +1142,12 @@ CONTAINS
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   SUBROUTINE NC_CMOR_ASSOCIATE_1D(grid_id,time_axid,height_axid,height_mlev_axid,column_axid,sza_axid, &
                          temp_axid,channel_axid,dbze_axid,sratio_axid,MISR_CTH_axid,tau_axid,pressure2_axid, &
-                         Nlon,Nlat,vgrid,gb,sg,sgradar,sglidar,isccp,misr,modis,rttov,stradar,stlidar, &
-                         v1d,v2d,v3d)
+                         reffICE_axid,reffLIQ_axid,Nlon,Nlat,vgrid,gb,sg,sgradar,sglidar,isccp,misr,modis,   &
+                         rttov,stradar,stlidar, v1d,v2d,v3d)
 
    ! Arguments
    integer,intent(in) :: grid_id,time_axid,height_axid,height_mlev_axid,column_axid,sza_axid, &
-                         temp_axid,channel_axid,dbze_axid,sratio_axid,MISR_CTH_axid,tau_axid,pressure2_axid
+                         temp_axid,channel_axid,dbze_axid,sratio_axid,MISR_CTH_axid,tau_axid,pressure2_axid,reffICE_axid,reffLIQ_axid
    integer,intent(in) :: Nlon,Nlat
    type(cosp_vgrid),intent(in) :: vgrid
    type(cosp_gridbox),intent(in) :: gb
@@ -1269,20 +1278,29 @@ CONTAINS
    d5 = (/grid_id,tau_axid,MISR_CTH_axid,0,0/)
    d4 = (/Npoints,7,MISR_N_CTH,0/)
    call construct_var3d('clMISR', d5, d4, misr%fq_MISR,v3d(8),units='%')
-
+   
+   ! DJS2015 START: Add new outputs for MODIS joint-histograms of tau and Reff
+   d5 = (/grid_id,tau_axid,ReffIce_axid,0,0/)
+   d4 = (/Npoints,7,numMODISReffIceBins,0/)
+   call construct_var3d('crimodis',d5, d4, modis%Optical_Thickness_vs_ReffIce,v3d(9),units='%')
+   d5 = (/grid_id,tau_axid,ReffLiq_axid,0,0/)
+   d4 = (/Npoints,7,numMODISReffLiqBins,0/)
+   call construct_var3d('crlmodis',d5, d4, modis%Optical_Thickness_vs_ReffLiq,v3d(10),units='%')
+   ! DJS2015 END
+      
   END SUBROUTINE NC_CMOR_ASSOCIATE_1D
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 !--------------- SUBROUTINE NC_CMOR_ASSOCIATE_2D ---------------------
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
   SUBROUTINE NC_CMOR_ASSOCIATE_2D(lon_axid,lat_axid,time_axid,height_axid,height_mlev_axid,column_axid,sza_axid, &
-                         temp_axid,channel_axid,dbze_axid,sratio_axid,MISR_CTH_axid,tau_axid,pressure2_axid, &
+                         temp_axid,channel_axid,dbze_axid,sratio_axid,MISR_CTH_axid,tau_axid,pressure2_axid,reffICE_axid,reffLIQ_axid, &
                          Nlon,Nlat,vgrid,gb,sg,sgradar,sglidar,isccp,misr,modis,rttov,stradar,stlidar, &
                          v1d,v2d,v3d)
 
    ! Arguments
    integer,intent(in) :: lon_axid,lat_axid,time_axid,height_axid,height_mlev_axid,column_axid,sza_axid, &
-                         temp_axid,channel_axid,dbze_axid,sratio_axid,MISR_CTH_axid,tau_axid,pressure2_axid
+                         temp_axid,channel_axid,dbze_axid,sratio_axid,MISR_CTH_axid,tau_axid,pressure2_axid,reffICE_axid,reffLIQ_axid
    integer,intent(in) :: Nlon,Nlat
    type(cosp_vgrid),intent(in) :: vgrid
    type(cosp_gridbox),intent(in) :: gb
@@ -1405,6 +1423,15 @@ CONTAINS
    d4 = (/Nlon,Nlat,7,MISR_N_CTH/)
    call construct_var3d('clMISR', d5, d4, misr%fq_MISR,v3d(8),units='%')
 
+   ! DJS2015 START: Add new outputs for MODIS joint-histograms of tau and Reff
+   d5 = (/lon_axid,lat_axid,tau_axid,ReffIce_axid,time_axid/)
+   d4 = (/Nlon,Nlat,7,numMODISReffIceBins/)
+   call construct_var3d('crimodis',d5, d4, modis%Optical_Thickness_vs_ReffIce,v3d(9),units='%')
+   d5 = (/lon_axid,lat_axid,tau_axid,ReffLiq_axid,time_axid/)
+   d4 = (/Nlon,Nlat,7,numMODISReffLiqBins/)
+   call construct_var3d('crlmodis',d5, d4, modis%Optical_Thickness_vs_ReffLiq,v3d(10),units='%')
+   ! DJS2015 END   
+   
   END SUBROUTINE NC_CMOR_ASSOCIATE_2D
 
 !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1593,7 +1620,7 @@ CONTAINS
              Lfracout,LlidarBetaMol532,Ltbrttov, &
              Lcltmodis,Lclwmodis,Lclimodis,Lclhmodis,Lclmmodis,Lcllmodis,Ltautmodis,Ltauwmodis,Ltauimodis,Ltautlogmodis, &
              Ltauwlogmodis,Ltauilogmodis,Lreffclwmodis,Lreffclimodis,Lpctmodis,Llwpmodis, &
-             Liwpmodis,Lclmodis
+             Liwpmodis,Lclmodis,Lcrimodis,Lcrlmodis
 
   namelist/COSP_OUTPUT/Lradar_sim,Llidar_sim,Lisccp_sim,Lmodis_sim,Lmisr_sim,Lrttov_sim, &
              Lalbisccp,Latb532,Lboxptopisccp,Lboxtauisccp,LcfadDbze94, &
@@ -1609,7 +1636,7 @@ CONTAINS
              Lfracout,LlidarBetaMol532,Ltbrttov, &
              Lcltmodis,Lclwmodis,Lclimodis,Lclhmodis,Lclmmodis,Lcllmodis,Ltautmodis,Ltauwmodis,Ltauimodis,Ltautlogmodis, &
              Ltauwlogmodis,Ltauilogmodis,Lreffclwmodis,Lreffclimodis,Lpctmodis,Llwpmodis, &
-             Liwpmodis,Lclmodis
+             Liwpmodis,Lclmodis,Lcrimodis,Lcrlmodis
 
   do i=1,N_OUT_LIST
     cfg%out_list(i)=''
@@ -1699,7 +1726,9 @@ CONTAINS
     Llwpmodis=.false.
     Liwpmodis=.false.
     Lclmodis=.false.
-  endif
+    Lcrimodis=.false.
+    Lcrlmodis=.false.
+ endif
   if (Lmodis_sim) Lisccp_sim = .true.
   
   cfg%Lstats = .false.
@@ -1849,7 +1878,11 @@ CONTAINS
   if (Liwpmodis)        cfg%out_list(i) = 'iwpmodis'
   i = i+1
   if (Lclmodis)         cfg%out_list(i) = 'clmodis'
-    
+  i = i+1
+  if (Lcrimodis)        cfg%out_list(i) = 'crimodis'
+  i = i+1
+  if (Lcrlmodis)        cfg%out_list(i) = 'crlmodis'
+      
   if (i /= N_OUT_LIST) then
      print *, 'COSP_IO: wrong number of output diagnostics'
      print *, i,N_OUT_LIST

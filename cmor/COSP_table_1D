@@ -118,6 +118,46 @@ must_have_bounds: yes
 !----------------------------------
 !
 
+!============
+axis_entry: reffLiq
+!============
+!----------------------------------
+! Axis attributes:
+!----------------------------------
+standard_name:    Effective_particle_size_Liquid
+units:            microns
+long_name:        Effective_particle_size_Liquid
+!----------------------------------
+! Additional axis information:
+!----------------------------------
+out_name:         reffLiq
+stored_direction: increasing
+tolerance:        0.001
+type:             double
+must_have_bounds: yes
+!----------------------------------
+!
+
+!============
+axis_entry: reffIce
+!============
+!----------------------------------
+! Axis attributes:
+!----------------------------------
+standard_name:    Effective_particle_size_Ice
+units:            microns
+long_name:        Effective_particle_size_Ice
+!----------------------------------
+! Additional axis information:
+!----------------------------------
+out_name:         reffIce
+stored_direction: increasing
+tolerance:        0.001
+type:             double
+must_have_bounds: yes
+!----------------------------------
+!
+
 !
 !============
 axis_entry: column
@@ -3857,6 +3897,46 @@ comment:      7 levels x 7 tau
 !----------------------------------
 dimensions:      location tau plev7 time1
 out_name:  clmodis
+type:      real
+!----------------------------------
+!
+
+!============
+variable_entry: crimodis
+!============
+modeling_realm:  atmos
+
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:  cloud_area_fraction
+units:         %
+long_name:          MODIS Cloud Area Fraction
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:      location tau reffIce time1
+out_name:  crimodis
+type:      real
+!----------------------------------
+!
+
+!============
+variable_entry: crlmodis
+!============
+modeling_realm:  atmos
+
+!----------------------------------
+! Variable attributes:
+!----------------------------------
+standard_name:  cloud_area_fraction
+units:         %
+long_name:          MODIS Cloud Area Fraction
+!----------------------------------
+! Additional variable information:
+!----------------------------------
+dimensions:      location tau reffLiq time1
+out_name:  crlmodis
 type:      real
 !----------------------------------
 !

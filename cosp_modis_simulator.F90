@@ -64,6 +64,8 @@ MODULE MOD_COSP_Modis_Simulator
      ! Also need the ISCCP-type optical thickness/cloud top pressure histogram
      !
      real, dimension(:, :, :), pointer :: Optical_Thickness_vs_Cloud_Top_Pressure
+     real, dimension(:, :, :), pointer :: Optical_Thickness_vs_ReffICE
+     real, dimension(:, :, :), pointer :: Optical_Thickness_vs_ReffLIQ
   end type COSP_MODIS 
   
 contains
@@ -114,7 +116,11 @@ contains
         meanLiquidWaterPath, meanIceWaterPath
         
     real, dimension(count(gridBox%sunlit(:) > 0), numModisTauBins, numModisPressureBins) :: & 
-       jointHistogram
+         jointHistogram
+    real, dimension(count(gridBox%sunlit(:) > 0), numModisTauBins, numMODISReffIceBins) :: & 
+         jointHistogram2
+    real, dimension(count(gridBox%sunlit(:) > 0), numModisTauBins, numMODISReffLiqBins) :: & 
+         jointHistogram3
     
     integer, dimension(count(gridBox%sunlit(:) >  0)) :: sunlit
     integer, dimension(count(gridBox%sunlit(:) <= 0)) :: notSunlit
@@ -213,18 +219,29 @@ contains
                                 isccpTau(i, :), isccpCloudTopPressure(i, :),                &
                                 retrievedPhase(i, :), retrievedCloudTopPressure(i, :),      & 
                                 retrievedTau(i, :), retrievedSize(i, :))
-      end do
-      call modis_L3_simulator(retrievedPhase,              &
-                              retrievedCloudTopPressure,   &
-                              retrievedTau, retrievedSize, &
-                              cfTotal,         cfLiquid,         cfIce,         &
-                              cfHigh,          cfMid,            cfLow,         &
-                              meanTauTotal,    meanTauLiquid,    meanTauIce,    &
-                              meanLogTauTotal, meanLogTauLiquid, meanLogTauIce, &
-                                               meanSizeLiquid,   meanSizeIce,   &
-                              meanCloudTopPressure,                             &
-                                               meanLiquidWaterPath, meanIceWaterPath, &
-                              jointHistogram)
+     end do
+     
+      ! DJS2015: Call L3 modis simulator used by cospv2.0
+     ! call modis_L3_simulator(retrievedPhase,              &
+     !                         retrievedCloudTopPressure,   &
+     !                         retrievedTau, retrievedSize, &
+     !                         cfTotal,         cfLiquid,         cfIce,         &
+     !                         cfHigh,          cfMid,            cfLow,         &
+     !                         meanTauTotal,    meanTauLiquid,    meanTauIce,    &
+     !                         meanLogTauTotal, meanLogTauLiquid, meanLogTauIce, &
+     !                         meanSizeLiquid,   meanSizeIce,   &
+     !                         meanCloudTopPressure,                             &
+     !                         meanLiquidWaterPath, meanIceWaterPath, &
+     !                         jointHistogram)
+     call modis_column(nSunlit,nSubcols,retrievedPhase,retrievedCloudTopPressure,   &
+                        retrievedTau,retrievedSize,cfTotal,cfLiquid,cfIce,cfHigh,    &
+                        cfMid,cfLow,meanTauTotal,meanTauLiquid,meanTauIce,           &
+                        meanLogTauTotal,meanLogTauLiquid,meanLogTauIce,              &
+                        meanSizeLiquid,meanSizeIce,meanCloudTopPressure,             &
+                        meanLiquidWaterPath, meanIceWaterPath,                       &
+                        jointHistogram,jointHistogram2,jointHistogram3)
+      ! DJS2015: END
+      
       !
       ! Copy results into COSP structure
       !
@@ -253,11 +270,12 @@ contains
       modisSim%Ice_Water_Path_Mean   (sunlit(:)) = meanIceWaterPath
       
       modisSim%Optical_Thickness_vs_Cloud_Top_Pressure(sunlit(:), 2:numModisTauBins+1, :) = jointHistogram(:, :, :)
+      modisSim%Optical_Thickness_vs_ReffICE(sunlit(:),2:numModisTauBins+1,:)              = jointHistogram2(:, :, :)
+      modisSim%Optical_Thickness_vs_ReffLIQ(sunlit(:),2:numModisTauBins+1,:)              = jointHistogram3(:, :, :)
       ! 
       ! Reorder pressure bins in joint histogram to go from surface to TOA 
       !
-      modisSim%Optical_Thickness_vs_Cloud_Top_Pressure(:,:,:) = &
-        modisSim%Optical_Thickness_vs_Cloud_Top_Pressure(:, :, numModisPressureBins:1:-1)
+      modisSim%Optical_Thickness_vs_Cloud_Top_Pressure(:,:,:) = modisSim%Optical_Thickness_vs_Cloud_Top_Pressure(:, :, numModisPressureBins:1:-1)
       if(nSunlit < nPoints) then 
         !
         ! Where it's night and we haven't done the retrievals the values are undefined
@@ -287,6 +305,8 @@ contains
         modisSim%Ice_Water_Path_Mean   (notSunlit(:)) = R_UNDEF
   
         modisSim%Optical_Thickness_vs_Cloud_Top_Pressure(notSunlit(:), :, :) = R_UNDEF
+        modisSim%Optical_Thickness_vs_ReffICE(notSunlit(:), :, :) = R_UNDEF
+        modisSim%Optical_Thickness_vs_ReffLIQ(notSunlit(:), :, :) = R_UNDEF
       end if 
     else
       !
@@ -317,6 +337,8 @@ contains
       modisSim%Ice_Water_Path_Mean   (:) = R_UNDEF
   
       modisSim%Optical_Thickness_vs_Cloud_Top_Pressure(:, :, :) = R_UNDEF
+      modisSim%Optical_Thickness_vs_ReffICE(:, :, :) = R_UNDEF
+      modisSim%Optical_Thickness_vs_ReffLIQ(:, :, :) = R_UNDEF
     end if 
 
   end subroutine COSP_Modis_Simulator
@@ -362,6 +384,8 @@ contains
     allocate(x%Ice_Water_Path_Mean(x%nPoints)) 
       
     allocate(x%Optical_Thickness_vs_Cloud_Top_Pressure(nPoints, numModisTauBins+1, numModisPressureBins))
+    allocate(x%Optical_Thickness_vs_ReffICE(nPoints, numModisTauBins+1, numModisReffIceBins))
+    allocate(x%Optical_Thickness_vs_ReffLIQ(nPoints, numModisTauBins+1, numModisReffLiqBins))
     x%Optical_Thickness_vs_Cloud_Top_Pressure(:, :, :) = R_UNDEF
   END SUBROUTINE CONSTRUCT_COSP_MODIS
 
@@ -399,6 +423,8 @@ contains
     if(associated(x%Ice_Water_Path_Mean   )) deallocate(x%Ice_Water_Path_Mean   ) 
     
     if(associated(x%Optical_Thickness_vs_Cloud_Top_Pressure)) deallocate(x%Optical_Thickness_vs_Cloud_Top_Pressure   ) 
+    if(associated(x%Optical_Thickness_vs_ReffIce)) deallocate(x%Optical_Thickness_vs_ReffIce) 
+    if(associated(x%Optical_Thickness_vs_ReffLiq)) deallocate(x%Optical_Thickness_vs_ReffLiq) 
   END SUBROUTINE FREE_COSP_MODIS
   ! -----------------------------------------------------
 
@@ -446,7 +472,12 @@ contains
     copy%Ice_Water_Path_Mean   (copy_start:copy_end) = orig%Ice_Water_Path_Mean  (orig_start:orig_end)
     
     copy%Optical_Thickness_vs_Cloud_Top_Pressure(copy_start:copy_end, :, :) = &
-                          orig%Optical_Thickness_vs_Cloud_Top_Pressure(orig_start:orig_end, :, :)
+         orig%Optical_Thickness_vs_Cloud_Top_Pressure(orig_start:orig_end, :, :)
+    copy%Optical_Thickness_vs_ReffIce(copy_start:copy_end, :, :) = &
+         orig%Optical_Thickness_vs_ReffIce(orig_start:orig_end, :, :)
+    copy%Optical_Thickness_vs_ReffLiq(copy_start:copy_end, :, :) = &
+         orig%Optical_Thickness_vs_ReffLiq(orig_start:orig_end, :, :)
+
   END SUBROUTINE COSP_MODIS_CPSECTION
   ! -----------------------------------------------------
 

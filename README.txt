@@ -4,6 +4,7 @@ vN.N is version number (e.g. v1.0)
 We will assume that the software will be installed in ~/cosp.
 
 This README has been written by Alejandro Bodas (alejandro.bodas at metoffice.gov.uk).
+Modified by Dustin Swales (dustin.swales@noaa.gov) on 9/27/2016
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1.- ABOUT THE CODE
@@ -58,21 +59,39 @@ the directory quickbeam.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 3.- DOWNLOADING AND UNPACKING
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Since v1.3.1, the code lives in Google code:
-http://code.google.com/p/cfmip-obs-sim/
+As of September 2015, the code is hosted on gitHub:
+https://github.com/CFMIP/COSPv1
 
-We encourage you to download the latest stable release using a subversion client on your local computer.
-You can accomplish this via the command line at a terminal prompt:
+You can use git to download the latest stable version of COSP. For example, to clone (git
+equivalent of svn co) a copy of the repository to your machine:
+git clone https://github.com/CFMIP/COSPv1.git
 
-svn co http://cfmip-obs-sim.googlecode.com/svn/stable/current COSP
+To view tagged versions of the repository you can use "git log". For example:
+[macSWALES:~/Desktop/COSPv1] dswales% git log
 
-When COSP is stable we will update this directory, so you can update your own code using 'svn update'. 
+   commit 572c53ab941c8019135d147fbdf01a6633487aaa
+   Author: Dustin Swales <dustin.swales@noaa.gov>
+   Date:   Mon Sep 14 11:53:52 2015 -0600
 
-The input and test NetCDF files have to be downloaded separately, from:
-http://code.google.com/p/cfmip-obs-sim/downloads/list
+       COSP version 1.4.0
 
-Copy cosp-test-files-vN.N.N.tgz to your COSP directory and run:
-tar -txzvf cosp-test-files-vN.N.N.tgz
+   commit 9e7d84d735249d95521852e0db0c8eed16b4f070
+   Author: Dustin Swales <dustin.swales@noaa.gov>
+   Date:   Mon Sep 14 11:15:51 2015 -0600
+
+       COSP version 1.3.2
+
+   commit ce4130ca7334bc30875e7cfc620d6195bf237c73
+   Author: Robert.Pincus <Robert.Pincus@colorado.edu>
+   Date:   Fri Mar 18 20:52:12 2011 +0000
+
+       Copying v1.3.1 to archive of stable releases.
+
+So for example, lets say you want to use COSPv1.3.2. To accomplish this you need to clone the
+repository (described above) and then revert to that tagged version using:
+git checkout 9e7d84d735249d95521852e0db0c8eed16b4f070
+
+Test input data and reference data is distributed with COSP (see data/).
 
 Now you can follow the steps in Section 4.
 

@@ -53,8 +53,8 @@ MODULE MOD_COSP_CONSTANTS
     real,parameter :: R_UNDEF = -1.0E30
 
     ! Number of possible output variables
-    integer,parameter :: N_OUT_LIST = 63
-    integer,parameter :: N3D = 8
+    integer,parameter :: N_OUT_LIST = 65
+    integer,parameter :: N3D = 10
     integer,parameter :: N2D = 14
     integer,parameter :: N1D = 40
 

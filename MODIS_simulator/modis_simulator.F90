@@ -78,8 +78,9 @@ module mod_modis_sim
   !
   real,    parameter :: re_water_min= 4., re_water_max= 30., re_ice_min= 5., re_ice_max= 90.
   integer, parameter :: num_trial_res = 15             ! increase to make the linear pseudo-retrieval of size more accurate
-  logical, parameter :: use_two_re_iterations = .false. ! do two retrieval iterations? 
-  
+! DJS2015: Remove unused parameter
+!  logical, parameter :: use_two_re_iterations = .false. ! do two retrieval iterations? 
+! DJS2015 END  
   !
   ! Precompute near-IR optical params vs size for retrieval scheme
   !
@@ -124,6 +125,30 @@ module mod_modis_sim
   real, parameter, dimension(numPressureHistogramBins) ::                         &
     nominalPressureHistogramCenters = (nominalPressureHistogramBoundaries(1, :) + &
                                        nominalPressureHistogramBoundaries(2, :) ) / 2.
+  ! DJS2015 START: Add bin descriptions for joint-histograms of partice-sizes and optical depth. This is
+  !                identical to what is done in COSPv.2.0.0 for histogram bin initialization. 
+  integer :: j
+  integer,parameter :: &
+       numMODISReffLiqBins = 6, & ! Number of bins for tau/ReffLiq joint-histogram
+       numMODISReffIceBins = 6    ! Number of bins for tau/ReffICE joint-histogram
+  real,parameter,dimension(numMODISReffLiqBins+1) :: &
+       reffLIQ_binBounds = (/0., 8e-6, 1.0e-5, 1.3e-5, 1.5e-5, 2.0e-5, 3.0e-5/)
+  real,parameter,dimension(numMODISReffIceBins+1) :: &
+       reffICE_binBounds = (/0., 1.0e-5, 2.0e-5, 3.0e-5, 4.0e-5, 6.0e-5, 9.0e-5/)
+  real,parameter,dimension(2,numMODISReffIceBins) :: &
+       reffICE_binEdges = reshape(source=(/reffICE_binBounds(1),((reffICE_binBounds(k),  &
+                                  l=1,2),k=2,numMODISReffIceBins),reffICE_binBounds(numMODISReffIceBins+1)/),  &
+                                  shape = (/2,numMODISReffIceBins/)) 
+  real,parameter,dimension(2,numMODISReffLiqBins) :: &
+       reffLIQ_binEdges = reshape(source=(/reffLIQ_binBounds(1),((reffLIQ_binBounds(k),  &
+                                  l=1,2),k=2,numMODISReffLiqBins),reffLIQ_binBounds(numMODISReffIceBins+1)/),  &
+                                  shape = (/2,numMODISReffLiqBins/))             
+  real,parameter,dimension(numMODISReffIceBins) :: &
+       reffICE_binCenters = (reffICE_binEdges(1,:)+reffICE_binEdges(2,:))/2.
+  real,parameter,dimension(numMODISReffLiqBins) :: &
+       reffLIQ_binCenters = (reffLIQ_binEdges(1,:)+reffLIQ_binEdges(2,:))/2.
+  ! DJS2015 END
+
   ! ------------------------------
   ! There are two ways to call the MODIS simulator: 
   !  1) Provide total optical thickness and liquid/ice water content and we'll partition tau in 
@@ -383,6 +408,234 @@ contains
                                     retrievedPhase, retrievedCloudTopPressure, retrievedTau, retrievedSize)
                                 
   end subroutine modis_L2_simulator_oneTau
+
+  ! ########################################################################################
+  subroutine modis_column(nPoints,nSubCols,phase, cloud_top_pressure, optical_thickness, particle_size,      &
+       Cloud_Fraction_Total_Mean,         Cloud_Fraction_Water_Mean,         Cloud_Fraction_Ice_Mean,        &
+       Cloud_Fraction_High_Mean,          Cloud_Fraction_Mid_Mean,           Cloud_Fraction_Low_Mean,        &
+       Optical_Thickness_Total_Mean,      Optical_Thickness_Water_Mean,      Optical_Thickness_Ice_Mean,     &
+       Optical_Thickness_Total_MeanLog10, Optical_Thickness_Water_MeanLog10, Optical_Thickness_Ice_MeanLog10,&
+       Cloud_Particle_Size_Water_Mean,    Cloud_Particle_Size_Ice_Mean,      Cloud_Top_Pressure_Total_Mean,  &
+       Liquid_Water_Path_Mean,            Ice_Water_Path_Mean,                                               &    
+       Optical_Thickness_vs_Cloud_Top_Pressure,Optical_Thickness_vs_ReffIce,Optical_Thickness_vs_ReffLiq)
+    
+    ! INPUTS
+    integer,intent(in) :: &
+         nPoints,                           & ! Number of horizontal gridpoints
+         nSubCols                             ! Number of subcolumns
+    integer,intent(in), dimension(:,:) ::  &
+!ds    integer,intent(in), dimension(nPoints, nSubCols) ::  &
+         phase                             
+    real,intent(in),dimension(:,:) ::  &
+!ds    real,intent(in),dimension(nPoints, nSubCols) ::  &
+         cloud_top_pressure,                &
+         optical_thickness,                 &
+         particle_size
+ 
+    ! OUTPUTS 
+    real,intent(inout),dimension(:)  ::   & !
+!ds    real,intent(inout),dimension(nPoints)  ::   & !
+         Cloud_Fraction_Total_Mean,         & !
+         Cloud_Fraction_Water_Mean,         & !
+         Cloud_Fraction_Ice_Mean,           & !
+         Cloud_Fraction_High_Mean,          & !
+         Cloud_Fraction_Mid_Mean,           & !
+         Cloud_Fraction_Low_Mean,           & !
+         Optical_Thickness_Total_Mean,      & !
+         Optical_Thickness_Water_Mean,      & !
+         Optical_Thickness_Ice_Mean,        & !
+         Optical_Thickness_Total_MeanLog10, & !
+         Optical_Thickness_Water_MeanLog10, & !
+         Optical_Thickness_Ice_MeanLog10,   & !
+         Cloud_Particle_Size_Water_Mean,    & !
+         Cloud_Particle_Size_Ice_Mean,      & !
+         Cloud_Top_Pressure_Total_Mean,     & !
+         Liquid_Water_Path_Mean,            & !
+         Ice_Water_Path_Mean                  !
+    real,intent(inout),dimension(:,:,:) :: &
+!ds    real,intent(inout),dimension(nPoints,numTauHistogramBins,numPressureHistogramBins) :: &
+         Optical_Thickness_vs_Cloud_Top_Pressure
+    real,intent(inout),dimension(:,:,:) :: &    
+!ds    real,intent(inout),dimension(nPoints,numTauHistogramBins,numMODISReffIceBins) :: &    
+         Optical_Thickness_vs_ReffIce
+    real,intent(inout),dimension(:,:,:) :: &    
+!ds    real,intent(inout),dimension(nPoints,numTauHistogramBins,numMODISReffLiqBins) :: &    
+         Optical_Thickness_vs_ReffLiq         
+
+    ! LOCAL VARIABLES
+    real, parameter :: &
+         LWP_conversion = 2./3. * 1000. ! MKS units  
+    integer :: i, j
+    logical, dimension(nPoints,nSubCols) :: &
+         cloudMask,      &
+         waterCloudMask, &
+         iceCloudMask,   &
+         validRetrievalMask
+    real,dimension(nPoints,nSubCols) :: &
+         tauWRK,ctpWRK,reffIceWRK,reffLiqWRK
+    
+    ! ########################################################################################
+    ! Include only those pixels with successful retrievals in the statistics 
+    ! ########################################################################################
+    validRetrievalMask(1:nPoints,1:nSubCols) = particle_size(1:nPoints,1:nSubCols) > 0.
+    cloudMask(1:nPoints,1:nSubCols) = phase(1:nPoints,1:nSubCols) /= phaseIsNone .and.       &
+         validRetrievalMask(1:nPoints,1:nSubCols)
+    waterCloudMask(1:nPoints,1:nSubCols) = phase(1:nPoints,1:nSubCols) == phaseIsLiquid .and. &
+         validRetrievalMask(1:nPoints,1:nSubCols)
+    iceCloudMask(1:nPoints,1:nSubCols)   = phase(1:nPoints,1:nSubCols) == phaseIsIce .and.    &
+         validRetrievalMask(1:nPoints,1:nSubCols)
+
+    ! ########################################################################################
+    ! Use these as pixel counts at first 
+    ! ########################################################################################
+    Cloud_Fraction_Total_Mean(1:nPoints) = real(count(cloudMask,      dim = 2))
+    Cloud_Fraction_Water_Mean(1:nPoints) = real(count(waterCloudMask, dim = 2))
+    Cloud_Fraction_Ice_Mean(1:nPoints)   = real(count(iceCloudMask,   dim = 2))
+    Cloud_Fraction_High_Mean(1:nPoints)  = real(count(cloudMask .and. cloud_top_pressure <=          &
+                                           highCloudPressureLimit, dim = 2)) 
+    Cloud_Fraction_Low_Mean(1:nPoints)   = real(count(cloudMask .and. cloud_top_pressure >           &
+                                           lowCloudPressureLimit,  dim = 2)) 
+    Cloud_Fraction_Mid_Mean(1:nPoints)   = Cloud_Fraction_Total_Mean(1:nPoints) - Cloud_Fraction_High_Mean(1:nPoints)&
+                                           - Cloud_Fraction_Low_Mean(1:nPoints)
+
+    ! ########################################################################################
+    ! Compute mean optical thickness.
+    ! ########################################################################################
+    Optical_Thickness_Total_Mean(1:nPoints) = sum(optical_thickness, mask = cloudMask,      dim = 2) / &
+                                              Cloud_Fraction_Total_Mean(1:nPoints) 
+    Optical_Thickness_Water_Mean(1:nPoints) = sum(optical_thickness, mask = waterCloudMask, dim = 2) / &
+                                              Cloud_Fraction_Water_Mean(1:nPoints)
+    Optical_Thickness_Ice_Mean(1:nPoints)   = sum(optical_thickness, mask = iceCloudMask,   dim = 2) / &
+                                              Cloud_Fraction_Ice_Mean(1:nPoints)
+       
+    ! ########################################################################################
+    ! We take the absolute value of optical thickness here to satisfy compilers that complains 
+    ! when we evaluate the logarithm of a negative number, even though it's not included in 
+    ! the sum. 
+    ! ########################################################################################
+    Optical_Thickness_Total_MeanLog10(1:nPoints) = sum(log10(abs(optical_thickness)), mask = cloudMask, &
+         dim = 2) / Cloud_Fraction_Total_Mean(1:nPoints)
+    Optical_Thickness_Water_MeanLog10(1:nPoints) = sum(log10(abs(optical_thickness)), mask = waterCloudMask,&
+         dim = 2) / Cloud_Fraction_Water_Mean(1:nPoints)
+    Optical_Thickness_Ice_MeanLog10(1:nPoints) = sum(log10(abs(optical_thickness)), mask = iceCloudMask,&
+         dim = 2) / Cloud_Fraction_Ice_Mean(1:nPoints)
+    Cloud_Particle_Size_Water_Mean(1:nPoints) = sum(particle_size, mask = waterCloudMask, dim = 2) / &
+         Cloud_Fraction_Water_Mean(1:nPoints)
+    Cloud_Particle_Size_Ice_Mean(1:nPoints) = sum(particle_size, mask = iceCloudMask,   dim = 2) / &
+         Cloud_Fraction_Ice_Mean(1:nPoints)
+    Cloud_Top_Pressure_Total_Mean(1:nPoints) = sum(cloud_top_pressure, mask = cloudMask, dim = 2) / &
+         max(1, count(cloudMask, dim = 2))
+    Liquid_Water_Path_Mean(1:nPoints) = LWP_conversion*sum(particle_size*optical_thickness, &
+         mask=waterCloudMask,dim=2)/Cloud_Fraction_Water_Mean(1:nPoints)
+    Ice_Water_Path_Mean(1:nPoints) = LWP_conversion * ice_density*sum(particle_size*optical_thickness,&
+         mask=iceCloudMask,dim = 2) /Cloud_Fraction_Ice_Mean(1:nPoints)
+
+    ! ########################################################################################
+    ! Normalize pixel counts to fraction.
+    ! ########################################################################################
+    Cloud_Fraction_High_Mean(1:nPoints)  = Cloud_Fraction_High_Mean(1:nPoints)  /nSubcols
+    Cloud_Fraction_Mid_Mean(1:nPoints)   = Cloud_Fraction_Mid_Mean(1:nPoints)   /nSubcols
+    Cloud_Fraction_Low_Mean(1:nPoints)   = Cloud_Fraction_Low_Mean(1:nPoints)   /nSubcols
+    Cloud_Fraction_Total_Mean(1:nPoints) = Cloud_Fraction_Total_Mean(1:nPoints) /nSubcols
+    Cloud_Fraction_Ice_Mean(1:nPoints)   = Cloud_Fraction_Ice_Mean(1:nPoints)   /nSubcols
+    Cloud_Fraction_Water_Mean(1:nPoints) = Cloud_Fraction_Water_Mean(1:nPoints) /nSubcols
+    
+    ! ########################################################################################
+    ! Set clear-scenes to undefined
+    ! ########################################################################################
+    where (Cloud_Fraction_Total_Mean == 0)
+       Optical_Thickness_Total_Mean      = R_UNDEF
+       Optical_Thickness_Total_MeanLog10 = R_UNDEF
+       Cloud_Top_Pressure_Total_Mean     = R_UNDEF
+    endwhere
+    where (Cloud_Fraction_Water_Mean == 0)
+       Optical_Thickness_Water_Mean      = R_UNDEF
+       Optical_Thickness_Water_MeanLog10 = R_UNDEF
+       Cloud_Particle_Size_Water_Mean    = R_UNDEF
+       Liquid_Water_Path_Mean            = R_UNDEF
+    endwhere
+    where (Cloud_Fraction_Ice_Mean == 0)
+       Optical_Thickness_Ice_Mean        = R_UNDEF
+       Optical_Thickness_Ice_MeanLog10   = R_UNDEF
+       Cloud_Particle_Size_Ice_Mean      = R_UNDEF
+       Ice_Water_Path_Mean               = R_UNDEF
+    endwhere
+    where (Cloud_Fraction_High_Mean == 0)  Cloud_Fraction_High_Mean = R_UNDEF
+    where (Cloud_Fraction_Mid_Mean == 0)   Cloud_Fraction_Mid_Mean = R_UNDEF
+    where (Cloud_Fraction_Low_Mean == 0)   Cloud_Fraction_Low_Mean = R_UNDEF
+
+    ! ########################################################################################
+    ! Joint histogram  
+    ! ########################################################################################
+
+    ! Loop over all points
+    tauWRK(1:nPoints,1:nSubCols)     = optical_thickness(1:nPoints,1:nSubCols)
+    ctpWRK(1:nPoints,1:nSubCols)     = cloud_top_pressure(1:nPoints,1:nSubCols)
+    reffIceWRK(1:nPoints,1:nSubCols) = merge(particle_size,R_UNDEF,iceCloudMask)
+    reffLiqWRK(1:nPoints,1:nSubCols) = merge(particle_size,R_UNDEF,waterCloudMask)
+    do j=1,nPoints
+
+       ! Fill clear and optically thin subcolumns with fill
+       where(.not. cloudMask(j,1:nSubCols)) 
+          tauWRK(j,1:nSubCols) = -999.
+          ctpWRK(j,1:nSubCols) = -999.
+       endwhere
+       ! Joint histogram of tau/CTP
+       call hist2D(tauWRK(j,1:nSubCols),ctpWRK(j,1:nSubCols),nSubCols,&
+                   tauHistogramBoundaries,numTauHistogramBins,&
+                   pressureHistogramBoundaries,numPressureHistogramBins,&
+                   Optical_Thickness_vs_Cloud_Top_Pressure(j,1:numTauHistogramBins,1:numPressureHistogramBins))
+       ! Joint histogram of tau/ReffICE
+       call hist2D(tauWRK(j,1:nSubCols),reffIceWrk(j,1:nSubCols),nSubCols,               &
+                   tauHistogramBoundaries,numTauHistogramBins,reffICE_binBounds,         &
+                   numMODISReffIceBins, Optical_Thickness_vs_ReffIce(j,1:numTauHistogramBins,1:numMODISReffIceBins))
+       ! Joint histogram of tau/ReffLIQ
+       call hist2D(tauWRK(j,1:nSubCols),reffLiqWrk(j,1:nSubCols),nSubCols,               &
+                   tauHistogramBoundaries,numTauHistogramBins,reffLIQ_binBounds,         &
+                   numMODISReffLiqBins, Optical_Thickness_vs_ReffLiq(j,1:numTauHistogramBins,1:numMODISReffLiqBins))                   
+
+    enddo   
+    Optical_Thickness_vs_Cloud_Top_Pressure(1:nPoints,1:numTauHistogramBins,1:numPressureHistogramBins) = &
+         Optical_Thickness_vs_Cloud_Top_Pressure(1:nPoints,1:numTauHistogramBins,1:numPressureHistogramBins)/nSubCols
+    Optical_Thickness_vs_ReffIce(1:nPoints,1:numTauHistogramBins,1:numMODISReffIceBins) = &
+         Optical_Thickness_vs_ReffIce(1:nPoints,1:numTauHistogramBins,1:numMODISReffIceBins)/nSubCols
+    Optical_Thickness_vs_ReffLiq(1:nPoints,1:numTauHistogramBins,1:numMODISReffLiqBins) = &
+         Optical_Thickness_vs_ReffLiq(1:nPoints,1:numTauHistogramBins,1:numMODISReffLiqBins)/nSubCols 
+
+  end subroutine modis_column
+  ! ######################################################################################
+  ! SUBROUTINE hist2D
+  ! ######################################################################################
+  subroutine hist2D(var1,var2,npts,bin1,nbin1,bin2,nbin2,jointHist)
+    implicit none
+    
+    ! INPUTS
+    integer, intent(in) :: &
+         npts,  & ! Number of data points to be sorted
+         nbin1, & ! Number of bins in histogram direction 1 
+         nbin2    ! Number of bins in histogram direction 2
+    real,intent(in),dimension(npts) :: &
+         var1,  & ! Variable 1 to be sorted into bins
+         var2     ! variable 2 to be sorted into bins
+    real,intent(in),dimension(nbin1+1) :: &
+         bin1     ! Histogram bin 1 boundaries
+    real,intent(in),dimension(nbin2+1) :: &
+         bin2     ! Histogram bin 2 boundaries
+    ! OUTPUTS
+    real,intent(out),dimension(nbin1,nbin2) :: &
+         jointHist
+    
+    ! LOCAL VARIABLES
+    integer :: ij,ik
+    
+    do ij=2,nbin1+1
+       do ik=2,nbin2+1
+          jointHist(ij-1,ik-1)=count(var1 .ge. bin1(ij-1) .and. var1 .lt. bin1(ij) .and. &
+               var2 .ge. bin2(ik-1) .and. var2 .lt. bin2(ik))        
+       enddo
+    enddo
+  end subroutine hist2D
+  
   !------------------------------------------------------------------------------------------------
   subroutine modis_L3_simulator(phase, cloud_top_pressure, optical_thickness, particle_size,            &
        Cloud_Fraction_Total_Mean,       Cloud_Fraction_Water_Mean,       Cloud_Fraction_Ice_Mean,       &
@@ -665,17 +918,19 @@ contains
       !
       ! If first retrieval works, can try 2nd iteration using greater re resolution 
       !
-      if(use_two_re_iterations .and. retrieve_re > 0.) then
-        re_min = retrieve_re - delta_re
-        re_max = retrieve_re + delta_re
-        delta_re = (re_max - re_min)/real(num_trial_res-1)
-  
-        trial_re(:) = re_min + delta_re * (/ (i - 1, i = 1, num_trial_res) /) 
-        g(:)  = get_g_nir(  phase, trial_re(:))
-        w0(:) = get_ssa_nir(phase, trial_re(:))
-        predicted_Refl_nir(:) = two_stream_reflectance(tau, g(:), w0(:))
-        retrieve_re = interpolate_to_min(trial_re(:), predicted_Refl_nir(:), obs_Refl_nir) 
-      end if
+! DJS2015: Remove unused piece of code      
+!      if(use_two_re_iterations .and. retrieve_re > 0.) then
+!        re_min = retrieve_re - delta_re
+!        re_max = retrieve_re + delta_re
+!        delta_re = (re_max - re_min)/real(num_trial_res-1)
+!  
+!        trial_re(:) = re_min + delta_re * (/ (i - 1, i = 1, num_trial_res) /) 
+!        g(:)  = get_g_nir(  phase, trial_re(:))
+!        w0(:) = get_ssa_nir(phase, trial_re(:))
+!        predicted_Refl_nir(:) = two_stream_reflectance(tau, g(:), w0(:))
+!        retrieve_re = interpolate_to_min(trial_re(:), predicted_Refl_nir(:), obs_Refl_nir) 
+!      end if
+! DJS2015 END
     else 
       retrieve_re = re_fill
     end if 
@@ -738,22 +993,22 @@ contains
     integer, intent(in) :: phase
     real,    intent(in) :: re
     real :: get_g_nir 
-    
-    real, dimension(3), parameter :: ice_coefficients   = (/ 0.7432,  4.5563e-3, -2.8697e-5 /), & 
-                               small_water_coefficients = (/ 0.8027, -1.0496e-2,  1.7071e-3 /), & 
-                                 big_water_coefficients = (/ 0.7931,  5.3087e-3, -7.4995e-5 /) 
-    
-    ! approx. fits from MODIS Collection 5 LUT scattering calculations
-    if(phase == phaseIsLiquid) then
-      if(re < 8.) then 
-        get_g_nir = fit_to_quadratic(re, small_water_coefficients)
-        if(re < re_water_min) get_g_nir = fit_to_quadratic(re_water_min, small_water_coefficients)
-      else
-        get_g_nir = fit_to_quadratic(re,   big_water_coefficients)
-        if(re > re_water_max) get_g_nir = fit_to_quadratic(re_water_max, big_water_coefficients)
-      end if 
+
+    real, dimension(3), parameter :: ice_coefficients         = (/ 0.7490, 6.5153e-3, -5.4136e-5 /), &
+                                     small_water_coefficients = (/ 1.0364, -8.8800e-2, 7.0000e-3 /)
+    real, dimension(4), parameter :: big_water_coefficients   = (/ 0.6035, 2.8993e-2, -1.1051e-3, 1.5134e-5 /)
+
+    ! approx. fits from MODIS Collection 6 LUT scattering calculations for 3.7 µm channel size retrievals
+    if(phase == phaseIsLiquid) then 
+       if(re < 7.) then
+          get_g_nir = fit_to_quadratic(re, small_water_coefficients)
+          if(re < re_water_min) get_g_nir = fit_to_quadratic(re_water_min, small_water_coefficients)
+       else
+          get_g_nir = fit_to_cubic(re, big_water_coefficients)
+          if(re > re_water_max) get_g_nir = fit_to_cubic(re_water_max, big_water_coefficients)
+       end if
     else
-      get_g_nir = fit_to_quadratic(re, ice_coefficients)
+       get_g_nir = fit_to_quadratic(re, ice_coefficients)
       if(re < re_ice_min) get_g_nir = fit_to_quadratic(re_ice_min, ice_coefficients)
       if(re > re_ice_max) get_g_nir = fit_to_quadratic(re_ice_max, ice_coefficients)
     end if 
@@ -770,11 +1025,10 @@ contains
         !   of size for ice and water
         ! Fits from Steve Platnick
         !
+        real, dimension(4), parameter :: ice_coefficients   = (/ 0.9625, -1.8069e-2, 3.3281e-4,-2.2865e-6/)
+        real, dimension(3), parameter :: water_coefficients = (/ 1.0044, -1.1397e-2, 1.3300e-4 /)
         
-        real, dimension(4), parameter :: ice_coefficients   = (/ 0.9994, -4.5199e-3, 3.9370e-5, -1.5235e-7 /)
-        real, dimension(3), parameter :: water_coefficients = (/ 1.0008, -2.5626e-3, 1.6024e-5 /) 
-        
-        ! approx. fits from MODIS Collection 5 LUT scattering calculations
+        ! approx. fits from MODIS Collection 6 LUT scattering calculations
         if(phase == phaseIsLiquid) then
           get_ssa_nir = fit_to_quadratic(re, water_coefficients)
           if(re < re_water_min) get_ssa_nir = fit_to_quadratic(re_water_min, water_coefficients)
