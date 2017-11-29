@@ -204,6 +204,14 @@ SUBROUTINE COSP_SIMULATOR(gbx,sgx,sghydro,cfg,vgrid,sgradar,sglidar,isccp,misr,m
     where(modis%Optical_Thickness_vs_Cloud_Top_Pressure /= R_UNDEF) modis%Optical_Thickness_vs_Cloud_Top_Pressure = &
                                                       modis%Optical_Thickness_vs_Cloud_Top_Pressure*100.0
   endif
+  if (cfg%Lcrimodis) then
+     where(modis%Optical_Thickness_vs_ReffICE /= R_UNDEF) modis%Optical_Thickness_vs_ReffICE = &
+                                                      modis%Optical_Thickness_vs_ReffICE*100.0
+  endif
+  if (cfg%Lcrlmodis) then
+     where(modis%Optical_Thickness_vs_ReffLIQ /= R_UNDEF) modis%Optical_Thickness_vs_ReffLIQ = &
+                                                      modis%Optical_Thickness_vs_ReffLIQ*100.0
+  endif
   if (cfg%Lcltmodis) then
      where(modis%Cloud_Fraction_Total_Mean /= R_UNDEF) modis%Cloud_Fraction_Total_Mean = modis%Cloud_Fraction_Total_Mean*100.0
   endif

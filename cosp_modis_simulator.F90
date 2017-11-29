@@ -387,6 +387,8 @@ contains
     allocate(x%Optical_Thickness_vs_ReffICE(nPoints, numModisTauBins+1, numModisReffIceBins))
     allocate(x%Optical_Thickness_vs_ReffLIQ(nPoints, numModisTauBins+1, numModisReffLiqBins))
     x%Optical_Thickness_vs_Cloud_Top_Pressure(:, :, :) = R_UNDEF
+    x%Optical_Thickness_vs_ReffICE(:, :, :)            = R_UNDEF
+    x%Optical_Thickness_vs_ReffLIQ(:, :, :)            = R_UNDEF
   END SUBROUTINE CONSTRUCT_COSP_MODIS
 
   !%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
