@@ -862,10 +862,10 @@ contains
     g(:) = 0; w0(:) = 0. 
     tau(:) = ice_tau(:) + water_tau(:) 
     where (tau(:) > 0) 
-      g(:)  = (water_tau(:) * water_g(:)                + ice_tau(:) * ice_g(:)            ) / & 
-              tau(:) 
-      w0(:) = (water_tau(:) * water_g(:) * water_w0(:)  + ice_tau(:) * ice_g(:) * ice_w0(:)) / &
-              (g(:) * tau(:))
+      w0(:) = (water_tau(:) * water_w0(:)  + ice_tau(:) * ice_w0(:)) / &
+              tau(:)
+      g(:) = (water_tau(:) * water_g(:) * water_w0(:)  + ice_tau(:) * ice_g(:) * ice_w0(:)) / &
+             (w0(:) * tau(:))
     end where
     
     compute_nir_reflectance = compute_toa_reflectace(tau, g, w0)
