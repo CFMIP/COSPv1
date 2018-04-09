@@ -283,60 +283,63 @@
 
         !     
         !   Modify MISR CTH for satellite spatial / pattern matcher effects
-    !
-    !   Code in this region added by roj 5/2006 to account
-    !   for spatial effect of the MISR pattern matcher.
-    !   Basically, if a column is found between two neighbors
-    !   at the same CTH, and that column has no hieght or
-    !   a lower CTH, THEN misr will tend to but place the
-    !   odd column at the same height as it neighbors.
-    !
-    !   This setup assumes the columns represent a about a 1 to 4 km scale
-    !   it will need to be modified significantly, otherwise
-        if(ncol.eq.1) then
-    
-       ! adjust based on neightboring points ... i.e. only 2D grid was input
-           do j=2,npoints-1
-            
-            if(box_MISR_ztop(j-1,1).gt.0 .and. 
-     &             box_MISR_ztop(j+1,1).gt.0       ) then
+    	!
+    	!   Code in this region added by roj 5/2006 to account
+    	!   for spatial effect of the MISR pattern matcher.
+    	!   Basically, if a column is found between two neighbors
+    	!   at the same CTH, and that column has no hieght or
+    	!   a lower CTH, THEN misr will tend to but place the
+    	!   odd column at the same height as it neighbors.
+    	!
+    	!   This setup assumes the columns represent a about a 1 to 4 km scale
+    	!   it will need to be modified significantly, otherwise
 
-                if( abs( box_MISR_ztop(j-1,1) -  
-     &                   box_MISR_ztop(j+1,1) ) .lt. 500 
-     &              .and.
-     &                   box_MISR_ztop(j,1) .lt. 
-     &                   box_MISR_ztop(j+1,1)     ) then
-            
-                    box_MISR_ztop(j,1) =
-     &                      box_MISR_ztop(j+1,1)    
-                endif
-
-            endif
-         enddo
-        else
-         
+    ! Commented out.  Should only be used with subcolumns are not randomly ordered.  Roj 4/2018
+    !
+    !    if(ncol.eq.1) then
+    !   
+       	 ! adjust based on neightboring points ... i.e. only 2D grid was input
+    !       do j=2,npoints-1
+    !        
+    !        if(box_MISR_ztop(j-1,1).gt.0 .and. 
+    ! &             box_MISR_ztop(j+1,1).gt.0       ) then
+    !
+    !            if( abs( box_MISR_ztop(j-1,1) -  
+    ! &                   box_MISR_ztop(j+1,1) ) .lt. 500 
+    ! &              .and.
+    ! &                   box_MISR_ztop(j,1) .lt. 
+    ! &                   box_MISR_ztop(j+1,1)     ) then
+    !            
+    !                box_MISR_ztop(j,1) =
+    ! &                      box_MISR_ztop(j+1,1)    
+    !            endif
+    !
+    !        endif
+    !     enddo
+    !    else
+    !     
          ! adjust based on neighboring subcolumns ....
-         do ibox=2,ncol-1
-            
-            if(box_MISR_ztop(1,ibox-1).gt.0 .and. 
-     &             box_MISR_ztop(1,ibox+1).gt.0        ) then
+    !     do ibox=2,ncol-1
+    !        
+    !        if(box_MISR_ztop(1,ibox-1).gt.0 .and. 
+    ! &             box_MISR_ztop(1,ibox+1).gt.0        ) then
+    !
+    !            if( abs( box_MISR_ztop(1,ibox-1) -  
+    ! &                   box_MISR_ztop(1,ibox+1) ) .lt. 500 
+    ! &              .and.
+    ! &                   box_MISR_ztop(1,ibox) .lt. 
+    ! &                   box_MISR_ztop(1,ibox+1)     ) then
+    !        
+    !                box_MISR_ztop(1,ibox) =
+    ! &                      box_MISR_ztop(1,ibox+1)    
+    !            endif
+    !
+    !        endif
+    !     enddo
+    !  
+    !    endif
 
-                if( abs( box_MISR_ztop(1,ibox-1) -  
-     &                   box_MISR_ztop(1,ibox+1) ) .lt. 500 
-     &              .and.
-     &                   box_MISR_ztop(1,ibox) .lt. 
-     &                   box_MISR_ztop(1,ibox+1)     ) then
-            
-                    box_MISR_ztop(1,ibox) =
-     &                      box_MISR_ztop(1,ibox+1)    
-                endif
-
-            endif
-         enddo
-      
-        endif
-
-        !     
+    !     
     !     DETERMINE CLOUD TYPE FREQUENCIES
     !
     !     Now that ztop and tau have been determined, 
