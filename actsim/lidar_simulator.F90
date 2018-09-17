@@ -199,7 +199,8 @@
       REAL pnorm_ice(npoints,nlev)    ! lidar backscattered signal power for ice
       REAL pnorm_perp_ice(npoints,nlev) ! perpendicular lidar backscattered signal power for ice
       REAL pnorm_perp_liq(npoints,nlev) ! perpendicular lidar backscattered signal power for liq
-
+      real epsreal
+      
 ! Output variable
       REAL pnorm_perp_tot (npoints,nlev) ! perpendicular lidar backscattered signal power
 
@@ -498,20 +499,24 @@ pnorm_perp_tot(:,:)=0
       ENDDO
 
 ! Computation of beta_perp_ice/liq using the lidar equation
+      epsreal = epsilon(1.)
 !     Ice only
 !     Upper layer 
       beta_perp_ice(:,nlev) = pnorm_perp_ice(:,nlev) * (2.*tautot_ice(:,nlev)) &
             & / (1.-exp(-2.0*tautot_ice(:,nlev)))
 
       DO k= nlev-1, 1, -1
-        tautot_lay_ice(:) = tautot_ice(:,k)-tautot_ice(:,k+1)
-        WHERE (tautot_lay_ice(:).GT.0.)
-         beta_perp_ice(:,k) = pnorm_perp_ice(:,k)/ EXP(-2.0*tautot_ice(:,k+1)) * (2.*tautot_lay_ice(:)) &
-            & / (1.-exp(-2.0*tautot_lay_ice(:)))
-
-        ELSEWHERE
-         beta_perp_ice(:,k)=pnorm_perp_ice(:,k)/EXP(-2.0*tautot_ice(:,k+1))
-        END WHERE
+         tautot_lay_ice(:) = tautot_ice(:,k)-tautot_ice(:,k+1)
+         WHERE ( EXP(-2.0*tautot_ice(:,k+1)) .gt. epsreal )
+            WHERE (tautot_lay_ice(:).GT.0.)
+               beta_perp_ice(:,k) = pnorm_perp_ice(:,k)/ EXP(-2.0*tautot_ice(:,k+1)) * (2.*tautot_lay_ice(:)) &
+                    & / (1.-exp(-2.0*tautot_lay_ice(:)))
+            ELSEWHERE
+               beta_perp_ice(:,k)=pnorm_perp_ice(:,k)/EXP(-2.0*tautot_ice(:,k+1))
+            END WHERE
+         elsewhere
+            beta_perp_ice(:,k)=pnorm_perp_ice(:,k)/epsreal
+         endwhere
       ENDDO
 
 !     Liquid only
@@ -521,13 +526,16 @@ pnorm_perp_tot(:,:)=0
 
       DO k= nlev-1, 1, -1
           tautot_lay_liq(:) = tautot_liq(:,k)-tautot_liq(:,k+1) 
-        WHERE (tautot_lay_liq(:).GT.0.)
-         beta_perp_liq(:,k) = pnorm_perp_liq(:,k)/ EXP(-2.0*tautot_liq(:,k+1)) * (2.*tautot_lay_liq(:)) &
-            & / (1.-exp(-2.0*tautot_lay_liq(:)))
-
-        ELSEWHERE
-         beta_perp_liq(:,k)=pnorm_perp_liq(:,k)/EXP(-2.0*tautot_liq(:,k+1))
-        END WHERE
+          WHERE ( EXP(-2.0*tautot_liq(:,k+1)) .gt. epsreal )
+             WHERE (tautot_lay_liq(:).GT.0.)
+                beta_perp_liq(:,k) = pnorm_perp_liq(:,k)/ EXP(-2.0*tautot_liq(:,k+1)) * (2.*tautot_lay_liq(:)) &
+                     & / (1.-exp(-2.0*tautot_lay_liq(:)))
+             ELSEWHERE
+                beta_perp_liq(:,k)=pnorm_perp_liq(:,k)/EXP(-2.0*tautot_liq(:,k+1))
+             END WHERE
+          elsewhere
+             beta_perp_liq(:,k)=pnorm_perp_liq(:,k)/epsreal
+          endwhere
       ENDDO
 
 
